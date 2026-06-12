@@ -19,14 +19,20 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     onboardingComplete,
     isLoading,
     hydrate,
+    setLoading,
     setAuthenticated,
     setProfile,
     setOnboardingComplete,
   } = useAuthStore();
 
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+    void hydrate();
+    // Safety net: never block the UI longer than 3s on web
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [hydrate, setLoading]);
 
   useEffect(() => {
     async function checkAuth() {

@@ -1,6 +1,6 @@
-import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 import type { UserProfile } from '@/types/domain';
+import { appStorage } from '@/lib/secure-storage';
 
 const ONBOARDING_KEY = 'vande_onboarding_complete';
 const CONSENT_KEY = 'vande_consent_complete';
@@ -31,30 +31,35 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuthenticated: (value) => set({ isAuthenticated: value }),
   setConsentComplete: (value) => {
     set({ consentComplete: value });
-    if (value) SecureStore.setItemAsync(CONSENT_KEY, 'true');
+    if (value) void appStorage.setItem(CONSENT_KEY, 'true');
   },
   setOnboardingComplete: (value) => {
     set({ onboardingComplete: value });
-    if (value) SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
+    if (value) void appStorage.setItem(ONBOARDING_KEY, 'true');
   },
   setLoading: (value) => set({ isLoading: value }),
 
   hydrate: async () => {
-    const [onboarding, consent] = await Promise.all([
-      SecureStore.getItemAsync(ONBOARDING_KEY),
-      SecureStore.getItemAsync(CONSENT_KEY),
-    ]);
-    set({
-      onboardingComplete: onboarding === 'true',
-      consentComplete: consent === 'true',
-      isLoading: false,
-    });
+    try {
+      const [onboarding, consent] = await Promise.all([
+        appStorage.getItem(ONBOARDING_KEY),
+        appStorage.getItem(CONSENT_KEY),
+      ]);
+      set({
+        onboardingComplete: onboarding === 'true',
+        consentComplete: consent === 'true',
+      });
+    } catch {
+      // Web / storage unavailable — start fresh
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   reset: async () => {
     await Promise.all([
-      SecureStore.deleteItemAsync(ONBOARDING_KEY),
-      SecureStore.deleteItemAsync(CONSENT_KEY),
+      appStorage.removeItem(ONBOARDING_KEY),
+      appStorage.removeItem(CONSENT_KEY),
     ]);
     set({
       profile: null,
