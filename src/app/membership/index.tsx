@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
-import { useStripe } from '@stripe/stripe-react-native';
+import { useStripePayment } from '@/lib/use-stripe';
 import { useQuery } from '@tanstack/react-query';
 import { MembershipCard } from '@/components/wellness/MembershipCard';
 import { getMembershipPlans } from '@/lib/api';
@@ -10,7 +10,7 @@ import type { MembershipPlan } from '@/types/domain';
 import { colors, spacing, typography } from '@/lib/theme';
 
 export default function MembershipScreen() {
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet } = useStripePayment();
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
   const { data: plans, isLoading } = useQuery({

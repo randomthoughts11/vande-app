@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useStripe } from '@stripe/stripe-react-native';
+import { useStripePayment } from '@/lib/use-stripe';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
@@ -15,7 +15,7 @@ export default function BookAppointmentScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ practitionerId?: string }>();
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { initPaymentSheet, presentPaymentSheet } = useStripePayment();
 
   const [serviceId, setServiceId] = useState('');
   const [practitionerId, setPractitionerId] = useState(params.practitionerId ?? '');

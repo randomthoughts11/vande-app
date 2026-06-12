@@ -2,14 +2,13 @@ import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { StripeProvider } from '@stripe/stripe-react-native';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import { getCurrentProfile } from '@/lib/api';
+import { StripeProviderWrapper } from '@/lib/stripe-provider';
 import { colors } from '@/lib/theme';
 
 const queryClient = new QueryClient();
-const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -97,11 +96,7 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 
-  return (
-    <StripeProvider publishableKey={stripeKey || 'pk_test_placeholder'}>
-      {content}
-    </StripeProvider>
-  );
+  return <StripeProviderWrapper>{content}</StripeProviderWrapper>;
 }
 
 const styles = StyleSheet.create({
