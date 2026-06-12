@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AuthLayout } from '@/components/ui/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { signUp } from '@/lib/api';
@@ -19,11 +19,11 @@ export default function RegisterScreen() {
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
+      firstName: 'Priya',
+      lastName: 'Sharma',
+      email: 'demo@vande.com',
+      password: 'demo123',
+      confirmPassword: 'demo123',
     },
   });
 
@@ -42,16 +42,25 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Join Vande Wellness</Text>
-      <Text style={styles.subtitle}>Create your account to begin your wellness journey</Text>
-
-      <Controller control={control} name="firstName" render={({ field: { onChange, onBlur, value } }) => (
-        <TextField label="First name" value={value} onChangeText={onChange} onBlur={onBlur} error={errors.firstName?.message} />
-      )} />
-      <Controller control={control} name="lastName" render={({ field: { onChange, onBlur, value } }) => (
-        <TextField label="Last name" value={value} onChangeText={onChange} onBlur={onBlur} error={errors.lastName?.message} />
-      )} />
+    <AuthLayout
+      title="Join Vande Wellness"
+      subtitle="Create your account to receive personalized Ayurvedic support."
+      footer={
+        <Button title="Create account" onPress={handleSubmit(onSubmit)} loading={loading} fullWidth />
+      }
+    >
+      <View style={styles.nameRow}>
+        <View style={styles.nameField}>
+          <Controller control={control} name="firstName" render={({ field: { onChange, onBlur, value } }) => (
+            <TextField label="First name" value={value} onChangeText={onChange} onBlur={onBlur} error={errors.firstName?.message} />
+          )} />
+        </View>
+        <View style={styles.nameField}>
+          <Controller control={control} name="lastName" render={({ field: { onChange, onBlur, value } }) => (
+            <TextField label="Last name" value={value} onChangeText={onChange} onBlur={onBlur} error={errors.lastName?.message} />
+          )} />
+        </View>
+      </View>
       <Controller control={control} name="email" render={({ field: { onChange, onBlur, value } }) => (
         <TextField label="Email" keyboardType="email-address" autoCapitalize="none" value={value} onChangeText={onChange} onBlur={onBlur} error={errors.email?.message} />
       )} />
@@ -62,18 +71,17 @@ export default function RegisterScreen() {
         <TextField label="Confirm password" secureTextEntry value={value} onChangeText={onChange} onBlur={onBlur} error={errors.confirmPassword?.message} />
       )} />
 
-      <Button title="Create account" onPress={handleSubmit(onSubmit)} loading={loading} fullWidth />
-
-      <Pressable onPress={() => router.push('/(auth)/login')} accessibilityRole="link">
-        <Text style={styles.link}>Already have an account? Log in</Text>
+      <Pressable onPress={() => router.push('/(auth)/login')} accessibilityRole="link" style={styles.linkWrap}>
+        <Text style={styles.link}>Already have an account? <Text style={styles.linkBold}>Log in</Text></Text>
       </Pressable>
-    </SafeAreaView>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.warmCream, padding: spacing.lg },
-  title: { ...typography.h1, color: colors.deepGreen },
-  subtitle: { ...typography.bodySmall, color: colors.mutedText, marginBottom: spacing.lg },
-  link: { ...typography.bodySmall, color: colors.primaryGreen, textAlign: 'center', marginTop: spacing.lg },
+  nameRow: { flexDirection: 'row', gap: spacing.sm },
+  nameField: { flex: 1 },
+  linkWrap: { marginTop: spacing.lg, alignItems: 'center' },
+  link: { ...typography.bodySmall, color: colors.mutedText },
+  linkBold: { color: colors.primaryGreen, fontWeight: '700' },
 });

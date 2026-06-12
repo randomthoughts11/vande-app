@@ -68,16 +68,17 @@ export default function OnboardingScreen() {
     else handleSubmit(onSubmit)();
   };
 
+  const progress = ((step + 1) / STEPS.length) * 100;
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.progress}>
-        {STEPS.map((s, i) => (
-          <View key={s} style={[styles.dot, i <= step && styles.dotActive]} />
-        ))}
+      <View style={styles.topBar}>
+        <Text style={styles.stepCount}>Step {step + 1} of {STEPS.length}</Text>
+        <Text style={styles.stepTitle}>{STEPS[step]}</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
       </View>
-      <Text style={styles.stepLabel}>
-        Step {step + 1} of {STEPS.length}: {STEPS[step]}
-      </Text>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {step === 0 && (
@@ -232,10 +233,24 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.warmCream },
-  progress: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingTop: spacing.md },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border },
-  dotActive: { backgroundColor: colors.primaryGreen },
-  stepLabel: { ...typography.caption, color: colors.mutedText, textAlign: 'center', marginVertical: spacing.sm },
+  topBar: {
+    backgroundColor: colors.deepGreen,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  stepCount: { ...typography.caption, color: colors.sage, textTransform: 'uppercase', letterSpacing: 1 },
+  stepTitle: { ...typography.h2, color: colors.warmCream, marginTop: spacing.xs },
+  progressTrack: {
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 3,
+    marginTop: spacing.md,
+    overflow: 'hidden',
+  },
+  progressFill: { height: '100%', backgroundColor: colors.gold, borderRadius: 3 },
   scroll: { padding: spacing.lg },
   question: { ...typography.h3, color: colors.ink, marginBottom: spacing.md },
   fieldLabel: { ...typography.label, color: colors.mutedText, marginBottom: spacing.xs, marginTop: spacing.sm },

@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MessageCircle } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { getThreads } from '@/lib/api';
 import { QUERY_KEYS } from '@/lib/constants';
 import { formatRelative } from '@/lib/dates';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, layout, radii, spacing, typography } from '@/lib/theme';
 
 export default function ChatListScreen() {
   const router = useRouter();
@@ -17,13 +18,7 @@ export default function ChatListScreen() {
     queryFn: getThreads,
   });
 
-  if (isLoading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primaryGreen} />
-      </View>
-    );
-  }
+  if (isLoading) return <LoadingScreen message="Loading messages..." />;
 
   return (
     <FlatList
@@ -32,31 +27,35 @@ export default function ChatListScreen() {
       data={threads}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={
-        <Text style={styles.disclaimer}>
-          This is not emergency support. For emergencies, call your local emergency number.
-        </Text>
+        <View style={styles.disclaimer}>
+          <Text style={styles.disclaimerTitle}>Not for emergencies</Text>
+          <Text style={styles.disclaimerText}>
+            For urgent medical needs, call your local emergency number immediately.
+          </Text>
+        </View>
       }
       renderItem={({ item }) => (
-        <Pressable
-          onPress={() => router.push(`/chat/${item.id}`)}
-          accessibilityRole="button"
-          accessibilityLabel={`Open chat: ${item.subject}`}
-        >
-          <Card style={styles.thread}>
-            <View style={styles.threadHeader}>
+        <Pressable onPress={() => router.push(`/chat/${item.id}`)} accessibilityRole="button">
+        <Card variant="elevated" style={styles.thread}>
+          <View style={styles.threadHeader}>
+            <View style={styles.threadIcon}>
               <MessageCircle size={20} color={colors.primaryGreen} />
-              <Text style={styles.subject}>{item.subject}</Text>
-              {item.unreadCount > 0 ? (
-                <Badge label={`${item.unreadCount} new`} variant="gold" />
-              ) : null}
             </View>
-            {item.lastMessage ? (
-              <Text style={styles.preview} numberOfLines={2}>{item.lastMessage}</Text>
+            <View style={styles.threadInfo}>
+              <Text style={styles.subject}>{item.subject}</Text>
+              <Text style={styles.category}>{item.category.replace('_', ' ')}</Text>
+            </View>
+            {item.unreadCount > 0 ? (
+              <Badge label={`${item.unreadCount}`} variant="gold" />
             ) : null}
-            {item.lastMessageAt ? (
-              <Text style={styles.time}>{formatRelative(item.lastMessageAt)}</Text>
-            ) : null}
-          </Card>
+          </View>
+          {item.lastMessage ? (
+            <Text style={styles.preview} numberOfLines={2}>{item.lastMessage}</Text>
+          ) : null}
+          {item.lastMessageAt ? (
+            <Text style={styles.time}>{formatRelative(item.lastMessageAt)}</Text>
+          ) : null}
+        </Card>
         </Pressable>
       )}
     />
@@ -65,19 +64,30 @@ export default function ChatListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.warmCream },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  list: { padding: spacing.md },
+  list: { padding: spacing.md, paddingBottom: spacing.xxl },
   disclaimer: {
-    ...typography.caption,
-    color: colors.warning,
-    backgroundColor: '#FFF3E0',
-    padding: spacing.sm,
-    borderRadius: 8,
-    marginBottom: spacing.md,
+    backgroundColor: '#FFF8E7',
+    padding: spacing.md,
+    borderRadius: radii.md,
+    marginBottom: layout.sectionGap,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.warning,
   },
-  thread: { marginBottom: spacing.sm },
+  disclaimerTitle: { ...typography.label, color: colors.warning },
+  disclaimerText: { ...typography.bodySmall, color: colors.ink, marginTop: 4, lineHeight: 20 },
+  thread: { marginBottom: layout.cardGap },
   threadHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  subject: { ...typography.label, color: colors.ink, flex: 1 },
-  preview: { ...typography.bodySmall, color: colors.mutedText, marginTop: spacing.xs },
-  time: { ...typography.caption, color: colors.mutedText, marginTop: 4 },
+  threadIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.sage,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  threadInfo: { flex: 1 },
+  subject: { ...typography.label, color: colors.ink },
+  category: { ...typography.caption, color: colors.mutedText, textTransform: 'capitalize' },
+  preview: { ...typography.bodySmall, color: colors.mutedText, marginTop: spacing.sm, lineHeight: 20 },
+  time: { ...typography.caption, color: colors.gold, marginTop: spacing.xs },
 });

@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStripePayment } from '@/lib/use-stripe';
 import { useQuery } from '@tanstack/react-query';
+import { Crown } from 'lucide-react-native';
 import { MembershipCard } from '@/components/wellness/MembershipCard';
+import { Card } from '@/components/ui/Card';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { getMembershipPlans } from '@/lib/api';
 import { QUERY_KEYS } from '@/lib/constants';
-import { processPayment } from '@/lib/stripe';
 import type { MembershipPlan } from '@/types/domain';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, layout, spacing, typography } from '@/lib/theme';
+import { processPayment } from '@/lib/stripe';
 
 export default function MembershipScreen() {
   const { initPaymentSheet, presentPaymentSheet } = useStripePayment();
@@ -36,23 +39,34 @@ export default function MembershipScreen() {
     }
   };
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen message="Loading membership plans..." />;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
-      <Text style={styles.intro}>
-        Choose a membership plan for virtual consultations, messaging, and member benefits.
-      </Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <Card variant="sage" style={styles.hero}>
+        <View style={styles.heroRow}>
+          <Crown size={28} color={colors.gold} />
+          <View style={styles.heroText}>
+            <Text style={styles.heroTitle}>Vande Membership</Text>
+            <Text style={styles.heroDesc}>
+              Virtual consultations, direct messaging, webinars, and member discounts on VandeCart.
+            </Text>
+          </View>
+        </View>
+      </Card>
+
       {plans?.map((plan) => (
-        <MembershipCard
-          key={plan.id}
-          plan={plan}
-          onSelect={() => handleSelect(plan)}
-          loading={loadingPlanId === plan.id}
-        />
+        <View key={plan.id} style={styles.planWrap}>
+          <MembershipCard
+            plan={plan}
+            onSelect={() => handleSelect(plan)}
+            loading={loadingPlanId === plan.id}
+          />
+        </View>
       ))}
+
       <Text style={styles.note}>
-        Digital courses may require separate app store payment review in a future release.
+        Digital course purchases may require separate app store review. Services and memberships use secure checkout.
       </Text>
     </ScrollView>
   );
@@ -61,6 +75,11 @@ export default function MembershipScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.warmCream },
   scroll: { padding: spacing.md, paddingBottom: spacing.xxl },
-  intro: { ...typography.body, color: colors.mutedText, marginBottom: spacing.lg },
-  note: { ...typography.caption, color: colors.mutedText, marginTop: spacing.md, fontStyle: 'italic' },
+  hero: { marginBottom: layout.sectionGap },
+  heroRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
+  heroText: { flex: 1 },
+  heroTitle: { ...typography.h3, color: colors.deepGreen },
+  heroDesc: { ...typography.bodySmall, color: colors.mutedText, marginTop: spacing.xs, lineHeight: 20 },
+  planWrap: { marginBottom: layout.cardGap },
+  note: { ...typography.caption, color: colors.mutedText, fontStyle: 'italic', textAlign: 'center', lineHeight: 18 },
 });

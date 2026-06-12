@@ -1,26 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CarePlanItemCard } from '@/components/wellness/CarePlanItemCard';
 import { MetricTrendCard } from '@/components/wellness/MetricTrendCard';
 import { Card } from '@/components/ui/Card';
-import { ProgressRing } from '@/components/ui/ProgressRing';
-import { SectionHeader } from '@/components/ui/SectionHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { ProgressRing } from '@/components/ui/ProgressRing';
+import { Screen } from '@/components/ui/Screen';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { Badge } from '@/components/ui/Badge';
 import { completeCarePlanItem, getCarePlan, skipCarePlanItem } from '@/lib/api';
 import { QUERY_KEYS } from '@/lib/constants';
 import { formatDate } from '@/lib/dates';
 import type { CarePlanItemType } from '@/types/domain';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, layout, spacing, typography } from '@/lib/theme';
 
-const SECTIONS: { key: CarePlanItemType | 'progress'; label: string }[] = [
-  { key: 'supplement', label: 'Supplements / Herbal Products' },
-  { key: 'yoga', label: 'Yoga Therapy' },
-  { key: 'nutrition', label: 'Nutrition' },
-  { key: 'lifestyle', label: 'Lifestyle' },
-  { key: 'detox', label: 'Detox / Panchakarma' },
-  { key: 'progress', label: 'Progress' },
+const SECTIONS: { key: CarePlanItemType | 'progress'; label: string; emoji: string }[] = [
+  { key: 'supplement', label: 'Supplements / Herbal', emoji: '🌿' },
+  { key: 'yoga', label: 'Yoga Therapy', emoji: '🧘' },
+  { key: 'nutrition', label: 'Nutrition', emoji: '🥗' },
+  { key: 'lifestyle', label: 'Lifestyle', emoji: '☀️' },
+  { key: 'detox', label: 'Detox / Panchakarma', emoji: '✨' },
+  { key: 'progress', label: 'Progress', emoji: '📈' },
 ];
 
 export default function PlanScreen() {
@@ -42,24 +45,18 @@ export default function PlanScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.carePlan }),
   });
 
-  if (isLoading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primaryGreen} />
-      </View>
-    );
-  }
+  if (isLoading) return <LoadingScreen message="Loading your care plan..." />;
 
   if (!plan) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Screen scroll={false}>
         <EmptyState
           title="No active care plan"
           description="Book a consultation to receive your personalized Ayurvedic wellness plan."
           actionLabel="Book consultation"
           onAction={() => router.push('/(tabs)/consult')}
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
@@ -67,83 +64,95 @@ export default function PlanScreen() {
   const adherence = plan.items.length > 0 ? (completedCount / plan.items.length) * 100 : 0;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Your Ayurvedic wellness plan</Text>
-          <Text style={styles.goal}>{plan.goal}</Text>
-        </View>
+    <Screen>
+      <PageHeader title="Your wellness plan" subtitle={plan.goal} />
 
-        <Card variant="elevated">
-          <View style={styles.overview}>
-            <ProgressRing progress={adherence} label={`${Math.round(adherence)}% adherence`} />
-            <View style={styles.overviewInfo}>
-              <Text style={styles.overviewLabel}>Assigned practitioner</Text>
-              <Text style={styles.overviewValue}>
-                {plan.practitioner?.firstName} {plan.practitioner?.lastName}
-              </Text>
-              <Text style={styles.overviewLabel}>Next review</Text>
-              <Text style={styles.overviewValue}>{formatDate(plan.nextReviewDate)}</Text>
-              {plan.progressSummary ? (
-                <Text style={styles.progressSummary}>{plan.progressSummary}</Text>
-              ) : null}
+      <Card variant="elevated" style={styles.overviewCard}>
+        <View style={styles.overview}>
+          <ProgressRing progress={adherence} size={72} />
+          <View style={styles.overviewInfo}>
+            <Badge label={plan.status} variant="success" />
+            <Text style={styles.practitionerLabel}>Assigned practitioner</Text>
+            <Text style={styles.practitionerName}>
+              {plan.practitioner?.firstName} {plan.practitioner?.lastName}
+            </Text>
+            <Text style={styles.practitionerCred}>{plan.practitioner?.credentials}</Text>
+            <View style={styles.reviewRow}>
+              <Text style={styles.reviewLabel}>Next review</Text>
+              <Text style={styles.reviewDate}>{formatDate(plan.nextReviewDate)}</Text>
             </View>
           </View>
-        </Card>
+        </View>
+        {plan.progressSummary ? (
+          <Text style={styles.progressSummary}>{plan.progressSummary}</Text>
+        ) : null}
+      </Card>
 
-        {SECTIONS.map((section) => {
-          if (section.key === 'progress') {
-            return (
-              <View key={section.key}>
-                <SectionHeader title={section.label} />
-                <View style={styles.metrics}>
-                  <MetricTrendCard label="Sleep" value={75} trend="Improving" />
-                  <MetricTrendCard label="Stress" value={60} trend="Stable" />
-                  <MetricTrendCard label="Digestion" value={80} trend="Improving" />
-                </View>
-                <Text style={styles.disclaimer}>
-                  Trends are based on your self-reported check-ins. Not a medical diagnosis.
-                </Text>
-              </View>
-            );
-          }
-
-          const items = plan.items.filter((i) => i.type === section.key);
-          if (items.length === 0) return null;
-
+      {SECTIONS.map((section) => {
+        if (section.key === 'progress') {
           return (
-            <View key={section.key}>
-              <SectionHeader title={section.label} />
-              {items.map((item) => (
+            <View key={section.key} style={styles.section}>
+              <SectionHeader title={`${section.emoji} ${section.label}`} />
+              <View style={styles.metrics}>
+                <MetricTrendCard label="Sleep" value={75} trend="↑ Improving" />
+                <MetricTrendCard label="Stress" value={60} trend="→ Stable" />
+                <MetricTrendCard label="Digestion" value={80} trend="↑ Improving" />
+              </View>
+              <Text style={styles.disclaimer}>
+                Based on your self-reported check-ins. Not a medical diagnosis.
+              </Text>
+            </View>
+          );
+        }
+
+        const items = plan.items.filter((i) => i.type === section.key);
+        if (items.length === 0) return null;
+
+        return (
+          <View key={section.key} style={styles.section}>
+            <SectionHeader
+              title={`${section.emoji} ${section.label}`}
+              subtitle={`${items.length} item${items.length > 1 ? 's' : ''}`}
+            />
+            {items.map((item) => (
+              <View key={item.id} style={styles.itemWrap}>
                 <CarePlanItemCard
-                  key={item.id}
                   item={item}
                   loading={completeMutation.isPending || skipMutation.isPending}
                   onComplete={() => completeMutation.mutate(item.id)}
                   onSkip={() => skipMutation.mutate(item.id)}
                   onAskTeam={() => router.push('/chat/thread-001')}
                 />
-              ))}
-            </View>
-          );
-        })}
-      </ScrollView>
-    </SafeAreaView>
+              </View>
+            ))}
+          </View>
+        );
+      })}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.warmCream },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scroll: { padding: spacing.md, paddingBottom: spacing.xxl },
-  header: { marginBottom: spacing.md },
-  title: { ...typography.h1, color: colors.deepGreen, fontSize: 24 },
-  goal: { ...typography.bodySmall, color: colors.mutedText, marginTop: spacing.xs },
-  overview: { flexDirection: 'row', gap: spacing.lg, alignItems: 'center' },
+  overviewCard: { marginBottom: layout.sectionGap },
+  overview: { flexDirection: 'row', gap: spacing.lg, alignItems: 'flex-start' },
   overviewInfo: { flex: 1 },
-  overviewLabel: { ...typography.caption, color: colors.mutedText, marginTop: spacing.sm },
-  overviewValue: { ...typography.label, color: colors.ink },
-  progressSummary: { ...typography.bodySmall, color: colors.primaryGreen, marginTop: spacing.sm },
+  practitionerLabel: { ...typography.caption, color: colors.mutedText, marginTop: spacing.sm },
+  practitionerName: { ...typography.h3, color: colors.ink },
+  practitionerCred: { ...typography.caption, color: colors.gold },
+  reviewRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md, paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border },
+  reviewLabel: { ...typography.caption, color: colors.mutedText },
+  reviewDate: { ...typography.label, color: colors.primaryGreen },
+  progressSummary: {
+    ...typography.bodySmall,
+    color: colors.primaryGreen,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    lineHeight: 20,
+  },
+  section: { marginBottom: layout.sectionGap },
+  itemWrap: { marginBottom: layout.cardGap },
   metrics: { flexDirection: 'row', gap: spacing.sm },
   disclaimer: { ...typography.caption, color: colors.mutedText, fontStyle: 'italic', marginTop: spacing.sm },
 });

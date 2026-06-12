@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import {
-  ChevronRight,
+  CreditCard,
   ExternalLink,
-  LogOut,
   MessageCircle,
   Shield,
+  ShoppingBag,
   Users,
 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { MenuRow } from '@/components/ui/MenuRow';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Screen } from '@/components/ui/Screen';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { Badge } from '@/components/ui/Badge';
 import { getFamilyMembers, requestDataDeletion, signOut } from '@/lib/api';
 import { registerForPushNotifications } from '@/lib/notifications';
 import { openVandeCart } from '@/lib/vandecart';
 import { useAuthStore } from '@/store/authStore';
-import { colors, spacing, typography } from '@/lib/theme';
-import { useQuery } from '@tanstack/react-query';
+import { colors, layout, radii, spacing, typography } from '@/lib/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -59,93 +62,98 @@ export default function ProfileScreen() {
     );
   };
 
+  const initials = `${profile?.firstName?.[0] ?? ''}${profile?.lastName?.[0] ?? ''}`.toUpperCase();
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Profile</Text>
+    <Screen>
+      <PageHeader title="Profile" subtitle="Manage your account and preferences" />
+
+      <Card variant="elevated" style={styles.profileCard}>
+        <View style={styles.profileRow}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials || 'VW'}</Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>
+              {profile?.firstName} {profile?.lastName}
+            </Text>
+            <Text style={styles.email}>{profile?.email}</Text>
+            <Badge label="Vande Wellness Member" variant="gold" />
+          </View>
         </View>
+      </Card>
 
-        <Card variant="elevated">
-          <Text style={styles.name}>
-            {profile?.firstName} {profile?.lastName}
-          </Text>
-          <Text style={styles.email}>{profile?.email}</Text>
-          <Text style={styles.memberSince}>Vande Wellness Member</Text>
-        </Card>
+      {family && family.length > 0 ? (
+        <View style={styles.section}>
+          <SectionHeader title="Family profiles" />
+          {family.map((member) => (
+            <Card key={member.id} variant="elevated" style={styles.familyCard}>
+              <View style={styles.familyRow}>
+                <View style={styles.familyIcon}>
+                  <Users size={18} color={colors.primaryGreen} />
+                </View>
+                <View>
+                  <Text style={styles.familyName}>
+                    {member.firstName} {member.lastName}
+                  </Text>
+                  <Text style={styles.familyRelation}>{member.relationship}</Text>
+                </View>
+              </View>
+            </Card>
+          ))}
+        </View>
+      ) : null}
 
-        <SectionHeader title="Family profiles" />
-        {family?.map((member) => (
-          <Card key={member.id} style={styles.familyCard}>
-            <Users size={18} color={colors.primaryGreen} />
-            <View style={styles.familyInfo}>
-              <Text style={styles.familyName}>
-                {member.firstName} {member.lastName}
-              </Text>
-              <Text style={styles.familyRelation}>{member.relationship}</Text>
-            </View>
-          </Card>
-        ))}
+      <View style={styles.section}>
+        <SectionHeader title="Membership & shop" />
+        <MenuRow
+          label="Membership & plans"
+          subtitle="View benefits and upgrade"
+          icon={CreditCard}
+          onPress={() => router.push('/membership')}
+        />
+        <MenuRow
+          label="Shop VandeCart"
+          subtitle="Herbal products & wellness kits"
+          icon={ShoppingBag}
+          onPress={() => openVandeCart()}
+          rightElement={<ExternalLink size={18} color={colors.primaryGreen} />}
+          showChevron={false}
+        />
+        <MenuRow
+          label="Messages"
+          subtitle="Chat with your care team"
+          icon={MessageCircle}
+          onPress={() => router.push('/chat')}
+        />
+      </View>
 
-        <Pressable onPress={() => router.push('/membership')} style={styles.menuItem}>
-          <Card>
-            <View style={styles.menuRow}>
-              <Text style={styles.menuText}>Membership & plans</Text>
-              <ChevronRight size={20} color={colors.mutedText} />
-            </View>
-          </Card>
-        </Pressable>
-
-        <Pressable onPress={() => openVandeCart()} style={styles.menuItem}>
-          <Card>
-            <View style={styles.menuRow}>
-              <Text style={styles.menuText}>Shop VandeCart</Text>
-              <ExternalLink size={18} color={colors.primaryGreen} />
-            </View>
-          </Card>
-        </Pressable>
-
-        <Pressable onPress={() => router.push('/chat')} style={styles.menuItem}>
-          <Card>
-            <View style={styles.menuRow}>
-              <MessageCircle size={18} color={colors.primaryGreen} />
-              <Text style={[styles.menuText, styles.menuTextFlex]}>Messages</Text>
-              <ChevronRight size={20} color={colors.mutedText} />
-            </View>
-          </Card>
-        </Pressable>
-
+      <View style={styles.section}>
         <SectionHeader title="Settings" />
-        <Card>
+        <Card variant="elevated">
           <View style={styles.settingRow}>
-            <Text style={styles.menuText}>Push notifications</Text>
+            <View>
+              <Text style={styles.settingLabel}>Push notifications</Text>
+              <Text style={styles.settingDesc}>Generic alerts only — no health details</Text>
+            </View>
             <Switch
               value={notifications}
               onValueChange={setNotifications}
-              trackColor={{ true: colors.primaryGreen }}
+              trackColor={{ true: colors.primaryGreen, false: colors.border }}
               accessibilityLabel="Toggle push notifications"
             />
           </View>
         </Card>
-
-        <Pressable onPress={() => router.push('/(auth)/consent')} style={styles.menuItem}>
-          <Card>
-            <View style={styles.menuRow}>
-              <Shield size={18} color={colors.primaryGreen} />
-              <Text style={[styles.menuText, styles.menuTextFlex]}>Privacy & consent</Text>
-              <ChevronRight size={20} color={colors.mutedText} />
-            </View>
-          </Card>
-        </Pressable>
-
-        <Button
-          title="Request data deletion"
-          variant="outline"
-          onPress={handleDataDeletion}
-          fullWidth
-          style={styles.deletionBtn}
+        <MenuRow
+          label="Privacy & consent"
+          subtitle="Review your agreements"
+          icon={Shield}
+          onPress={() => router.push('/(auth)/consent')}
         />
+      </View>
 
+      <View style={styles.section}>
+        <Button title="Request data deletion" variant="outline" onPress={handleDataDeletion} fullWidth />
         <Button
           title="Log out"
           variant="ghost"
@@ -153,32 +161,46 @@ export default function ProfileScreen() {
           fullWidth
           style={styles.logoutBtn}
         />
-        <View style={styles.logoutIcon}>
-          <LogOut size={16} color={colors.danger} />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+
+      <Text style={styles.version}>Vande Wellness · Demo build</Text>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.warmCream },
-  scroll: { padding: spacing.md, paddingBottom: spacing.xxl },
-  header: { marginBottom: spacing.md },
-  title: { ...typography.h1, color: colors.deepGreen, fontSize: 24 },
+  profileCard: { marginBottom: layout.sectionGap },
+  profileRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.sage,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.lightGold,
+  },
+  avatarText: { ...typography.h3, color: colors.deepGreen },
+  profileInfo: { flex: 1, gap: 4 },
   name: { ...typography.h3, color: colors.ink },
   email: { ...typography.bodySmall, color: colors.mutedText },
-  memberSince: { ...typography.caption, color: colors.gold, marginTop: spacing.sm },
-  familyCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
-  familyInfo: { flex: 1 },
+  section: { marginBottom: layout.sectionGap },
+  familyCard: { marginBottom: layout.cardGap },
+  familyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  familyIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.sage,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   familyName: { ...typography.label, color: colors.ink },
   familyRelation: { ...typography.caption, color: colors.mutedText },
-  menuItem: { marginBottom: spacing.sm },
-  menuRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  menuText: { ...typography.body, color: colors.ink },
-  menuTextFlex: { flex: 1 },
-  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  deletionBtn: { marginTop: spacing.md },
+  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md },
+  settingLabel: { ...typography.label, color: colors.ink },
+  settingDesc: { ...typography.caption, color: colors.mutedText, marginTop: 2 },
   logoutBtn: { marginTop: spacing.sm },
-  logoutIcon: { display: 'none' },
+  version: { ...typography.caption, color: colors.mutedText, textAlign: 'center', marginBottom: spacing.lg },
 });

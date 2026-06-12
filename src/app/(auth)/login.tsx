@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AuthLayout } from '@/components/ui/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { signIn } from '@/lib/api';
 import { loginSchema, type LoginForm } from '@/lib/validators';
 import { useAuthStore } from '@/store/authStore';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, radii, spacing, typography } from '@/lib/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function LoginScreen() {
 
   const { control, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: 'demo@vande.com', password: 'demo123' },
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -36,10 +36,13 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Welcome back</Text>
-      <Text style={styles.subtitle}>Log in to your Vande Wellness account</Text>
-
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Log in to continue your Ayurvedic wellness journey."
+      footer={
+        <Button title="Log in" onPress={handleSubmit(onSubmit)} loading={loading} fullWidth />
+      }
+    >
       <Controller
         control={control}
         name="email"
@@ -72,37 +75,47 @@ export default function LoginScreen() {
         )}
       />
 
-      <Button title="Log in" onPress={handleSubmit(onSubmit)} loading={loading} fullWidth />
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or continue with</Text>
+        <View style={styles.dividerLine} />
+      </View>
 
       <View style={styles.social}>
         <Pressable style={styles.socialBtn} disabled accessibilityLabel="Sign in with Apple, coming soon">
-          <Text style={styles.socialText}>Apple — Coming soon</Text>
+          <Text style={styles.socialText}> Apple</Text>
         </Pressable>
         <Pressable style={styles.socialBtn} disabled accessibilityLabel="Sign in with Google, coming soon">
-          <Text style={styles.socialText}>Google — Coming soon</Text>
+          <Text style={styles.socialText}> Google</Text>
         </Pressable>
       </View>
+      <Text style={styles.comingSoon}>Social sign-in coming soon</Text>
 
-      <Pressable onPress={() => router.push('/(auth)/register')} accessibilityRole="link">
-        <Text style={styles.link}>Don&apos;t have an account? Sign up</Text>
+      <Pressable onPress={() => router.push('/(auth)/register')} accessibilityRole="link" style={styles.linkWrap}>
+        <Text style={styles.link}>Don&apos;t have an account? <Text style={styles.linkBold}>Sign up</Text></Text>
       </Pressable>
-    </SafeAreaView>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.warmCream, padding: spacing.lg },
-  title: { ...typography.h1, color: colors.deepGreen },
-  subtitle: { ...typography.bodySmall, color: colors.mutedText, marginBottom: spacing.lg },
-  social: { marginTop: spacing.lg, gap: spacing.sm },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg, gap: spacing.sm },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: { ...typography.caption, color: colors.mutedText },
+  social: { flexDirection: 'row', gap: spacing.sm },
   socialBtn: {
+    flex: 1,
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
-    opacity: 0.6,
+    backgroundColor: colors.card,
+    opacity: 0.55,
   },
-  socialText: { ...typography.bodySmall, color: colors.mutedText },
-  link: { ...typography.bodySmall, color: colors.primaryGreen, textAlign: 'center', marginTop: spacing.lg },
+  socialText: { ...typography.label, color: colors.mutedText },
+  comingSoon: { ...typography.caption, color: colors.mutedText, textAlign: 'center', marginTop: spacing.xs },
+  linkWrap: { marginTop: spacing.xl, alignItems: 'center' },
+  link: { ...typography.bodySmall, color: colors.mutedText },
+  linkBold: { color: colors.primaryGreen, fontWeight: '700' },
 });

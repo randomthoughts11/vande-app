@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
+import { Platform, StyleSheet } from 'react-native';
 import { Calendar, BookOpen, Home, User, ClipboardList } from 'lucide-react-native';
-import { colors } from '@/lib/theme';
+import { colors, typography } from '@/lib/theme';
 
 export default function TabLayout() {
   return (
@@ -9,10 +10,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primaryGreen,
         tabBarInactiveTintColor: colors.mutedText,
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-        },
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarStyle: styles.tabBar,
       }}
     >
       <Tabs.Screen
@@ -53,3 +52,19 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: colors.card,
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    height: Platform.OS === 'ios' ? 88 : 64,
+    paddingTop: 6,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+  },
+  tabLabel: {
+    ...typography.caption,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+});

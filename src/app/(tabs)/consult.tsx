@@ -1,15 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Clock, Video } from 'lucide-react-native';
 import { PractitionerCard } from '@/components/wellness/PractitionerCard';
 import { AppointmentCard } from '@/components/wellness/AppointmentCard';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Screen } from '@/components/ui/Screen';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { Badge } from '@/components/ui/Badge';
 import { getAppointments, getPractitioners, getServices } from '@/lib/api';
 import { QUERY_KEYS } from '@/lib/constants';
-import { colors, spacing, typography } from '@/lib/theme';
+import { colors, layout, radii, spacing, typography } from '@/lib/theme';
 
 export default function ConsultScreen() {
   const router = useRouter();
@@ -30,74 +33,120 @@ export default function ConsultScreen() {
   });
 
   if (loadingServices || loadingPractitioners) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primaryGreen} />
-      </View>
-    );
+    return <LoadingScreen message="Loading consultations..." />;
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Consult</Text>
-          <Text style={styles.subtitle}>Book your next Ayurvedic consultation</Text>
-        </View>
+    <Screen>
+      <PageHeader
+        title="Consult"
+        subtitle="Book virtual or in-person Ayurvedic consultations"
+      />
 
-        <Button
-          title="Book consultation"
-          onPress={() => router.push('/appointment/book')}
-          fullWidth
-          accessibilityLabel="Book consultation"
-        />
+      <Pressable
+        onPress={() => router.push('/appointment/book')}
+        accessibilityRole="button"
+        style={styles.heroCta}
+      >
+        <Card variant="sage" style={styles.heroCard}>
+          <View style={styles.heroContent}>
+            <View style={styles.heroIcon}>
+              <Video size={24} color={colors.primaryGreen} />
+            </View>
+            <View style={styles.heroText}>
+              <Text style={styles.heroTitle}>Book a consultation</Text>
+              <Text style={styles.heroDesc}>Same-week virtual appointments available</Text>
+            </View>
+            <Text style={styles.heroArrow}>→</Text>
+          </View>
+        </Card>
+      </Pressable>
 
-        <SectionHeader title="Consultation services" />
-        {services?.map((service) => (
-          <Card key={service.id} style={styles.serviceCard}>
-            <Text style={styles.serviceName}>{service.name}</Text>
+      <SectionHeader title="Consultation services" subtitle="Choose what fits your needs" />
+      {services?.map((service) => (
+        <Pressable
+          key={service.id}
+          onPress={() => router.push({ pathname: '/appointment/book', params: { serviceId: service.id } })}
+          style={styles.serviceWrap}
+        >
+          <Card variant="elevated">
+            <View style={styles.serviceHeader}>
+              <Text style={styles.serviceName}>{service.name}</Text>
+              <Badge
+                label={service.priceCents === 0 ? 'Included' : `$${(service.priceCents / 100).toFixed(0)}`}
+                variant={service.priceCents === 0 ? 'success' : 'gold'}
+              />
+            </View>
             <Text style={styles.serviceDesc}>{service.description}</Text>
-            <Text style={styles.serviceMeta}>
-              {service.durationMinutes} min · ${(service.priceCents / 100).toFixed(0)}
-            </Text>
+            <View style={styles.serviceMeta}>
+              <Clock size={14} color={colors.mutedText} />
+              <Text style={styles.serviceMetaText}>{service.durationMinutes} minutes</Text>
+              <Text style={styles.serviceDot}>·</Text>
+              <Text style={styles.serviceMetaText}>
+                {service.type === 'both' ? 'Virtual or in-person' : service.type === 'virtual' ? 'Virtual' : 'In-person'}
+              </Text>
+            </View>
           </Card>
-        ))}
+        </Pressable>
+      ))}
 
-        <SectionHeader title="Our practitioners" />
-        {practitioners?.map((p) => (
+      <SectionHeader title="Our practitioners" subtitle="BAMS, MD Ayurveda & wellness experts" />
+      {practitioners?.map((p) => (
+        <View key={p.id} style={styles.practitionerWrap}>
           <PractitionerCard
-            key={p.id}
             practitioner={p}
             onBook={() => router.push({ pathname: '/appointment/book', params: { practitionerId: p.id } })}
           />
-        ))}
+        </View>
+      ))}
 
-        {appointments && appointments.length > 0 ? (
-          <>
-            <SectionHeader title="Your appointments" />
-            {appointments.map((appt) => (
-              <AppointmentCard
-                key={appt.id}
-                appointment={appt}
-                onPress={() => router.push(`/appointment/${appt.id}`)}
-              />
-            ))}
-          </>
-        ) : null}
-      </ScrollView>
-    </SafeAreaView>
+      <SectionHeader
+        title="Your appointments"
+        subtitle={appointments?.length ? `${appointments.length} scheduled` : 'None yet'}
+      />
+      {appointments && appointments.length > 0 ? (
+        appointments.map((appt) => (
+          <View key={appt.id} style={styles.apptWrap}>
+            <AppointmentCard
+              appointment={appt}
+              onPress={() => router.push(`/appointment/${appt.id}`)}
+            />
+          </View>
+        ))
+      ) : (
+        <Card style={styles.emptyAppt}>
+          <Text style={styles.emptyText}>No appointments yet. Book your first consultation above.</Text>
+        </Card>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.warmCream },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scroll: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.sm },
-  header: { marginBottom: spacing.md },
-  title: { ...typography.h1, color: colors.deepGreen, fontSize: 24 },
-  subtitle: { ...typography.bodySmall, color: colors.mutedText },
-  serviceCard: { marginBottom: spacing.sm },
-  serviceName: { ...typography.label, color: colors.ink },
-  serviceDesc: { ...typography.bodySmall, color: colors.mutedText, marginTop: 4 },
-  serviceMeta: { ...typography.caption, color: colors.gold, marginTop: spacing.xs },
+  heroCta: { marginBottom: layout.sectionGap },
+  heroCard: { borderColor: colors.primaryGreen, borderWidth: 1 },
+  heroContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  heroIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroText: { flex: 1 },
+  heroTitle: { ...typography.h3, color: colors.deepGreen },
+  heroDesc: { ...typography.caption, color: colors.mutedText, marginTop: 2 },
+  heroArrow: { ...typography.h2, color: colors.primaryGreen },
+  serviceWrap: { marginBottom: layout.cardGap },
+  serviceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.sm },
+  serviceName: { ...typography.label, color: colors.ink, flex: 1 },
+  serviceDesc: { ...typography.bodySmall, color: colors.mutedText, marginTop: spacing.xs, lineHeight: 20 },
+  serviceMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.sm },
+  serviceMetaText: { ...typography.caption, color: colors.mutedText },
+  serviceDot: { color: colors.mutedText },
+  practitionerWrap: { marginBottom: layout.cardGap },
+  apptWrap: { marginBottom: layout.cardGap },
+  emptyAppt: { alignItems: 'center', paddingVertical: spacing.lg },
+  emptyText: { ...typography.bodySmall, color: colors.mutedText, textAlign: 'center' },
 });

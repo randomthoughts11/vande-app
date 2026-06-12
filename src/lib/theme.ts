@@ -51,3 +51,8 @@ export const shadows = {
     elevation: 3,
   },
 };
+
+export const layout = {
+  cardGap: 12,
+  sectionGap: 20,
+} as const;
