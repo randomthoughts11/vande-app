@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { CarePlanItemCard } from '@/components/wellness/CarePlanItemCard';
+import { CarePlanItemCard } from '@/components/features/wellness/CarePlanItemCard';
 import { getCarePlan } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { colors, spacing, typography } from '@/lib/theme';

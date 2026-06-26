@@ -1,0 +1,2 @@
+/** Care plan detail */
+export {};

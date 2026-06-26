@@ -1,129 +1,398 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Heart, Leaf, Sparkles, Sun } from 'lucide-react-native';
+import { StatusBar } from 'expo-status-bar';
+import {
+  ArrowRight,
+  Heart,
+  Leaf,
+  Shield,
+  Sparkles,
+  Stethoscope,
+  Sun,
+} from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
-import { APP_NAME } from '@/lib/constants';
-import { colors, radii, spacing, typography } from '@/lib/theme';
+import { colors, radii, shadows, spacing, typography } from '@/lib/theme';
 
-const FEATURES = [
-  { icon: Leaf, label: 'Personalized care plans' },
-  { icon: Heart, label: 'Expert consultations' },
-  { icon: Sun, label: 'Daily balance rituals' },
-  { icon: Sparkles, label: 'Ayurvedic guidance' },
-];
+const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia' });
+const sans = Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' });
+
+const PILLARS = [
+  { icon: Stethoscope, label: 'Holistic physicians' },
+  { icon: Heart, label: 'Personalized care' },
+  { icon: Sun, label: 'Daily rituals' },
+] as const;
+
+const BENEFITS = [
+  {
+    icon: Leaf,
+    title: 'Root-cause focus',
+    text: 'Understand patterns across mind, body, and daily life.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Ayurvedic wisdom',
+    text: 'Modern care grounded in time-tested principles.',
+  },
+  {
+    icon: Shield,
+    title: 'Private & secure',
+    text: 'Your health story stays between you and your care team.',
+  },
+] as const;
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.hero}>
-        <View style={styles.logoCircle}>
-          <Leaf size={48} color={colors.gold} />
-        </View>
-        <Text style={styles.appName}>{APP_NAME}</Text>
-        <Text style={styles.tagline}>
-          Personalized Ayurveda, Yoga, Nutrition & Wellness Support
-        </Text>
-      </View>
+    <View style={styles.root}>
+      <StatusBar style="light" />
 
-      <View style={styles.features}>
-        {FEATURES.map(({ icon: Icon, label }) => (
-          <View key={label} style={styles.featureChip}>
-            <Icon size={16} color={colors.primaryGreen} />
-            <Text style={styles.featureText}>{label}</Text>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.decorA} />
+        <View style={styles.decorB} />
+
+        <View style={styles.brandLockup}>
+          <View style={styles.logoOuter}>
+            <View style={styles.logoInner}>
+              <Leaf size={34} color={colors.gold} fill={colors.lightGold} strokeWidth={1.5} />
+            </View>
+            <Text style={styles.logoRingText}>VANDE WELLNESS</Text>
           </View>
-        ))}
+
+          <Text style={styles.wordmark}>Vande Wellness</Text>
+          <Text style={styles.taglineItalic}>Whole-person Ayurvedic care</Text>
+          <Text style={styles.heroLine}>
+            Consultations, care plans, and guidance —{'\n'}built around you.
+          </Text>
+        </View>
       </View>
 
-      <Text style={styles.subtitle}>
-        Your Ayurvedic wellness plan, guided by Vande practitioners.
-      </Text>
+      <ScrollView
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 130 }]}
+      >
+        {/* Floating pillars */}
+        <View style={styles.pillarRow}>
+          {PILLARS.map(({ icon: Icon, label }) => (
+            <View key={label} style={styles.pillarCard}>
+              <View style={styles.pillarIcon}>
+                <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+              </View>
+              <Text style={styles.pillarLabel}>{label}</Text>
+            </View>
+          ))}
+        </View>
 
-      <View style={styles.actions}>
+        {/* Main card */}
+        <View style={styles.card}>
+          <Text style={styles.overline}>WHY VANDE</Text>
+          <Text style={styles.cardTitle}>Wellness that feels calm, clear, and personal</Text>
+
+          <View style={styles.benefitList}>
+            {BENEFITS.map(({ icon: Icon, title, text }) => (
+              <View key={title} style={styles.benefitRow}>
+                <View style={styles.benefitIcon}>
+                  <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+                </View>
+                <View style={styles.benefitCopy}>
+                  <Text style={styles.benefitTitle}>{title}</Text>
+                  <Text style={styles.benefitText}>{text}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.quoteBox}>
+            <Text style={styles.quoteText}>
+              &ldquo;Start with a free consultation — no pressure, just clarity on your next
+              steps.&rdquo;
+            </Text>
+          </View>
+
+          <View style={styles.demoBadge}>
+            <Text style={styles.demoText}>
+              Demo · use any email with a 6+ character password
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Footer CTAs */}
+      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <Button
           title="Create account"
           onPress={() => router.push('/(auth)/register')}
           fullWidth
+          style={styles.primaryCta}
         />
-        <Button
-          title="Log in"
-          variant="outline"
+        <Pressable
           onPress={() => router.push('/(auth)/login')}
-          fullWidth
-        />
-        <Text style={styles.demoHint}>Demo: use any email and a 6+ character password</Text>
+          style={({ pressed }) => [styles.loginRow, pressed && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Log in to your account"
+        >
+          <Text style={styles.loginText}>Already with Vande? </Text>
+          <Text style={styles.loginBold}>Log in</Text>
+          <ArrowRight size={16} color={colors.primaryGreen} strokeWidth={2.5} />
+        </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: colors.warmCream,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
   },
-  hero: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
+    backgroundColor: colors.primaryGreen,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    paddingBottom: 48,
+    overflow: 'hidden',
+  },
+  decorA: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    top: -60,
+    right: -50,
+  },
+  decorB: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    bottom: 20,
+    left: -40,
+  },
+  brandLockup: {
     alignItems: 'center',
-    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
-  logoCircle: {
+  logoOuter: {
+    width: 108,
+    height: 108,
+    borderRadius: 54,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  logoInner: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoRingText: {
+    position: 'absolute',
+    fontSize: 8,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.75)',
+    letterSpacing: 2,
     width: 100,
-    height: 100,
-    borderRadius: 50,
+    textAlign: 'center',
+    fontFamily: sans,
+  },
+  wordmark: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: colors.white,
+    fontFamily: serif,
+    letterSpacing: -0.5,
+  },
+  taglineItalic: {
+    fontSize: 15,
+    fontStyle: 'italic',
+    color: colors.lightGold,
+    fontFamily: serif,
+    marginTop: 4,
+  },
+  heroLine: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.9)',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginTop: spacing.md,
+    fontFamily: sans,
+  },
+  scroll: {
+    flex: 1,
+    marginTop: -28,
+  },
+  scrollInner: {
+    paddingHorizontal: spacing.lg,
+  },
+  pillarRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: spacing.md,
+  },
+  pillarCard: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: radii.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    gap: 8,
+    ...shadows.card,
+    borderWidth: 1,
+    borderColor: colors.borderWarm,
+  },
+  pillarIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: colors.sage,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.lightGold,
   },
-  appName: { ...typography.h1, color: colors.deepGreen, textAlign: 'center' },
-  tagline: {
-    ...typography.body,
-    color: colors.mutedText,
+  pillarLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.deepGreen,
     textAlign: 'center',
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.md,
-    lineHeight: 24,
+    lineHeight: 13,
+    fontFamily: sans,
   },
-  features: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: spacing.sm,
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radii['2xl'],
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.borderWarm,
+    ...shadows.card,
+  },
+  overline: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: colors.accent,
+    marginBottom: spacing.xs,
+    fontFamily: sans,
+  },
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.deepGreen,
+    fontFamily: serif,
+    lineHeight: 30,
     marginBottom: spacing.lg,
   },
-  featureChip: {
+  benefitList: {
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    alignItems: 'flex-start',
+  },
+  benefitIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.mint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderSage,
+  },
+  benefitCopy: {
+    flex: 1,
+    paddingTop: 2,
+  },
+  benefitTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.deepGreen,
+    marginBottom: 2,
+    fontFamily: sans,
+  },
+  benefitText: {
+    fontSize: 13,
+    color: colors.mutedText,
+    lineHeight: 18,
+    fontFamily: sans,
+  },
+  quoteBox: {
+    backgroundColor: colors.cardWarm,
+    borderRadius: radii.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.gold,
+  },
+  quoteText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: colors.textSecondary,
+    fontFamily: serif,
+    fontStyle: 'italic',
+  },
+  demoBadge: {
+    backgroundColor: colors.sage,
+    borderRadius: radii.md,
+    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.borderSage,
+  },
+  demoText: {
+    ...typography.caption,
+    color: colors.primaryGreen,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+    backgroundColor: colors.warmCream,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    ...shadows.md,
+  },
+  primaryCta: {
+    borderRadius: radii.pill,
+  },
+  loginRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.card,
-    paddingHorizontal: spacing.md,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.border,
+    gap: 4,
   },
-  featureText: { ...typography.caption, color: colors.ink, fontWeight: '600' },
-  subtitle: {
-    ...typography.bodySmall,
-    color: colors.ink,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20,
-  },
-  actions: { gap: spacing.sm },
-  demoHint: {
-    ...typography.caption,
+  loginText: {
+    fontSize: 14,
     color: colors.mutedText,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    fontStyle: 'italic',
+    fontFamily: sans,
+  },
+  loginBold: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primaryGreen,
+    fontFamily: sans,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

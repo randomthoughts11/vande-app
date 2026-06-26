@@ -1,0 +1,2 @@
+/** Appointment booking & detail */
+export {};

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CarePlanItemCard } from '@/components/wellness/CarePlanItemCard';
-import { MetricTrendCard } from '@/components/wellness/MetricTrendCard';
+import { CarePlanItemCard } from '@/components/features/wellness/CarePlanItemCard';
+import { MetricTrendCard } from '@/components/features/wellness/MetricTrendCard';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';

@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { MOOD_OPTIONS } from '@/lib/constants';
+import { MOOD_OPTIONS } from '@/constants';
 import { colors, radii, spacing, typography } from '@/lib/theme';
 
 interface MoodCheckInProps {

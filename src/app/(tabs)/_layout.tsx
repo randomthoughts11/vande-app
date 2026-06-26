@@ -1,6 +1,8 @@
 import { Tabs } from 'expo-router';
 import { Platform, StyleSheet } from 'react-native';
-import { Calendar, BookOpen, Home, User, ClipboardList } from 'lucide-react-native';
+import { CalendarDays, Home, Menu, Store } from 'lucide-react-native';
+import { EVENTS_COLORS } from '@/constants/events-mock';
+import { MENU_COLORS } from '@/constants/menu-mock';
 import { colors, typography } from '@/lib/theme';
 
 export default function TabLayout() {
@@ -17,36 +19,37 @@ export default function TabLayout() {
       <Tabs.Screen
         name="today"
         options={{
-          title: 'Today',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="plan"
-        options={{
-          title: 'Plan',
-          tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="consult"
-        options={{
-          title: 'Consult',
-          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <Home color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="learn"
         options={{
-          title: 'Learn',
-          tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} />,
+          title: 'Events',
+          tabBarActiveTintColor: EVENTS_COLORS.accentPink,
+          tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="consult"
+        options={{
+          title: 'Shop',
+          tabBarIcon: ({ color, size }) => <Store color={color} size={size} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          title: 'Menu',
+          tabBarActiveTintColor: MENU_COLORS.textPrimary,
+          tabBarIcon: ({ color, size }) => <Menu color={color} size={size} strokeWidth={2} />,
+        }}
+      />
+      <Tabs.Screen
+        name="plan"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
@@ -66,5 +69,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '600',
     marginTop: 2,
+    fontSize: 11,
   },
 });

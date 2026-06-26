@@ -3,7 +3,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStripePayment } from '@/lib/use-stripe';
 import { useQuery } from '@tanstack/react-query';
 import { Crown } from 'lucide-react-native';
-import { MembershipCard } from '@/components/wellness/MembershipCard';
+import { MembershipCard } from '@/components/features/wellness/MembershipCard';
 import { Card } from '@/components/ui/Card';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { getMembershipPlans } from '@/lib/api';

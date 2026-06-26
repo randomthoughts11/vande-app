@@ -9,6 +9,22 @@ The MVP uses a **mock-to-live API abstraction** (`src/lib/api.ts`) so screens ne
 ## Mobile layers
 
 ```
+src/app/          Expo Router routes (thin re-exports)
+src/screens/      Screen compositions & page logic
+src/components/   ui/, layout/, features/ — reusable UI
+src/hooks/        Shared React hooks
+src/constants/    Routes, query keys, static config
+src/lib/          API, theme, validators, integrations
+src/store/        Zustand auth and app state
+src/types/        Domain TypeScript types
+assets/           Fonts, icons, bundled images
+```
+
+See `docs/folder-structure.md` for the full production layout and VANDE screen mapping.
+
+Previously:
+
+```
 src/app/          Expo Router screens (auth, tabs, stacks)
 src/components/   Reusable UI and wellness components
 src/lib/          API, theme, validators, integrations
@@ -23,18 +39,18 @@ src/types/        Domain TypeScript types
 
 ## Future backend services
 
-| Service | Responsibility |
-|---------|----------------|
-| Member/Profile | User profiles, family members |
+| Service           | Responsibility                                 |
+| ----------------- | ---------------------------------------------- |
+| Member/Profile    | User profiles, family members                  |
 | Intake/Assessment | Wellness questionnaires, non-diagnostic scores |
-| Care Plan | Practitioner-authored plans and item logs |
-| Appointment | Booking, video links, payments |
-| Messaging | Care-team chat, realtime, audit |
-| Content/Event | Courses, webinars, retreats |
-| Product | VandeCart metadata and recommendations |
-| Billing | Stripe memberships and service payments |
-| Notification | Generic push (no PHI in previews) |
-| Audit/Compliance | Consent, audit logs, data deletion |
+| Care Plan         | Practitioner-authored plans and item logs      |
+| Appointment       | Booking, video links, payments                 |
+| Messaging         | Care-team chat, realtime, audit                |
+| Content/Event     | Courses, webinars, retreats                    |
+| Product           | VandeCart metadata and recommendations         |
+| Billing           | Stripe memberships and service payments        |
+| Notification      | Generic push (no PHI in previews)              |
+| Audit/Compliance  | Consent, audit logs, data deletion             |
 
 ## Data model
 
@@ -50,13 +66,13 @@ See `src/supabase/migrations/001_initial_schema.sql` for the full Postgres schem
 
 ## Integrations
 
-| Integration | MVP | Production |
-|-------------|-----|------------|
-| VandeCart | Deep links via `expo-web-browser` | Catalog sync API |
-| Stripe | PaymentSheet for services/memberships | Edge Function `create-payment-intent` |
-| Video | External Zoom URLs | Zoom/Twilio/Agora SDK |
-| Email/SMS/WhatsApp | Not wired | Backend notifications |
-| Calendar | Not wired | Optional calendar sync |
+| Integration        | MVP                                   | Production                            |
+| ------------------ | ------------------------------------- | ------------------------------------- |
+| VandeCart          | Deep links via `expo-web-browser`     | Catalog sync API                      |
+| Stripe             | PaymentSheet for services/memberships | Edge Function `create-payment-intent` |
+| Video              | External Zoom URLs                    | Zoom/Twilio/Agora SDK                 |
+| Email/SMS/WhatsApp | Not wired                             | Backend notifications                 |
+| Calendar           | Not wired                             | Optional calendar sync                |
 
 ## MVP vs production
 

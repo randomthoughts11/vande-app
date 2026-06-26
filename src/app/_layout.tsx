@@ -91,8 +91,9 @@ export default function RootLayout() {
           <Stack.Screen name="appointment/book" options={{ headerShown: true, title: 'Book Consultation', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="appointment/[id]" options={{ headerShown: true, title: 'Appointment', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="care-plan/[id]" options={{ headerShown: true, title: 'Care Plan', headerTintColor: colors.primaryGreen }} />
-          <Stack.Screen name="chat/index" options={{ headerShown: true, title: 'Messages', headerTintColor: colors.primaryGreen }} />
-          <Stack.Screen name="chat/[threadId]" options={{ headerShown: true, title: 'Chat', headerTintColor: colors.primaryGreen }} />
+          <Stack.Screen name="intake" options={{ headerShown: false }} />
+          <Stack.Screen name="chat/index" options={{ headerShown: false }} />
+          <Stack.Screen name="chat/[threadId]" options={{ headerShown: false }} />
           <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Event', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="content/[id]" options={{ headerShown: true, title: 'Content', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="products/[id]" options={{ headerShown: true, title: 'Product', headerTintColor: colors.primaryGreen }} />
