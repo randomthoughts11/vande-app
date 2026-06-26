@@ -54,7 +54,7 @@ src/types/        Domain TypeScript types
 
 ## Data model
 
-See `src/supabase/migrations/001_initial_schema.sql` for the full Postgres schema. Core entities: `profiles`, `care_plans`, `care_plan_items`, `appointments`, `messages`, `checkins`, `products`, `memberships`, `consents`, `audit_logs`.
+See `src/supabase/migrations/001_initial_schema.sql` for the full Postgres schema. Setup guide: `docs/supabase-setup.md`.
 
 ## Security model
 

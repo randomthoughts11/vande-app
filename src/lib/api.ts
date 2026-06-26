@@ -34,6 +34,25 @@ import {
   MOCK_MEMBER_ID,
 } from './mockData';
 import { isSupabaseConfigured, supabase } from './supabase';
+import {
+  dbBookAppointment,
+  dbGetAppointments,
+  dbGetEvents,
+  dbGetMembershipPlans,
+  dbGetPractitioners,
+  dbGetProducts,
+  dbGetServices,
+  dbRegisterForEvent,
+  dbRequestDataDeletion,
+  dbSaveConsents,
+  dbSubmitIntake,
+} from './supabase/data-service';
+import {
+  ensureMemberProfile,
+  fetchProfileByAuthUserId,
+  memberHasConsents,
+} from './supabase/profile-service';
+import { mapProfileFromDb } from './supabase/mappers';
 import { computeWellnessScores, type ConsentForm, type IntakeForm } from './validators';
 
 // In-memory state for mock mode
@@ -58,8 +77,9 @@ export async function signIn(email: string, password: string): Promise<UserProfi
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    const profile = await getCurrentProfile();
-    if (!profile) throw new Error('Profile not found');
+    if (!data.user) throw new Error('Sign in failed');
+    const profile =
+      (await fetchProfileByAuthUserId(data.user.id)) ?? (await ensureMemberProfile(data.user));
     return profile;
   }
   await delay();
@@ -75,27 +95,16 @@ export async function signUp(
   lastName: string,
 ): Promise<UserProfile> {
   if (isSupabaseConfigured && supabase) {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { first_name: firstName, last_name: lastName } },
     });
     if (error) throw error;
-    const profile = await getCurrentProfile();
-    if (!profile) {
-      return {
-        id: generateId('member'),
-        authUserId: generateId('auth'),
-        role: 'member',
-        firstName,
-        lastName,
-        email,
-        timezone: 'America/New_York',
-        country: 'US',
-        onboardingComplete: false,
-        createdAt: new Date().toISOString(),
-      };
-    }
+    if (!data.user) throw new Error('Sign up failed');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const profile =
+      (await fetchProfileByAuthUserId(data.user.id)) ?? (await ensureMemberProfile(data.user));
     return profile;
   }
   await delay();
@@ -124,13 +133,7 @@ export async function getCurrentProfile(): Promise<UserProfile | null> {
   if (isSupabaseConfigured && supabase) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single();
-    if (!data) return null;
-    return mapProfileFromDb(data);
+    return fetchProfileByAuthUserId(user.id);
   }
   await delay(100);
   return mockProfileState;
@@ -165,6 +168,11 @@ export async function updateProfile(updates: Partial<UserProfile>): Promise<User
 }
 
 export async function saveConsents(consents: ConsentForm): Promise<ConsentRecord[]> {
+  if (isSupabaseConfigured && supabase) {
+    const profile = await getCurrentProfile();
+    if (!profile) throw new Error('Not authenticated');
+    return dbSaveConsents(consents, profile.id);
+  }
   await delay();
   const now = new Date().toISOString();
   const types = [
@@ -207,13 +215,8 @@ export async function submitIntake(intake: IntakeForm): Promise<IntakeResponse> 
   if (isSupabaseConfigured && supabase) {
     const profile = await getCurrentProfile();
     if (profile) {
-      await supabase.from('intake_responses').insert({
-        member_id: profile.id,
-        goals: intake.goals,
-        symptoms: intake.symptoms,
-        responses_json: intake,
-        wellness_scores: wellnessScores,
-      });
+      await dbSubmitIntake(profile.id, intake, wellnessScores);
+      return { ...response, memberId: profile.id, id: generateId('intake') };
     }
   }
 
@@ -282,16 +285,25 @@ export async function createCheckIn(mood: string, notes?: string): Promise<{ id:
 }
 
 export async function getPractitioners(): Promise<Practitioner[]> {
+  if (isSupabaseConfigured && supabase) return dbGetPractitioners();
   await delay(100);
   return mockPractitioners;
 }
 
 export async function getServices(): Promise<Service[]> {
+  if (isSupabaseConfigured && supabase) return dbGetServices();
   await delay(100);
   return mockServices;
 }
 
 export async function getAppointments(): Promise<Appointment[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      return await dbGetAppointments();
+    } catch {
+      return [];
+    }
+  }
   await delay(100);
   return mockAppointmentsState;
 }
@@ -302,6 +314,7 @@ export async function getAppointment(id: string): Promise<Appointment | null> {
 }
 
 export async function bookAppointment(input: BookAppointmentInput): Promise<Appointment> {
+  if (isSupabaseConfigured && supabase) return dbBookAppointment(input);
   await delay();
   const service = mockServices.find((s) => s.id === input.serviceId);
   const practitioner = mockPractitioners.find((p) => p.id === input.practitionerId);
@@ -373,6 +386,7 @@ export async function getContentItem(id: string): Promise<ContentItem | null> {
 }
 
 export async function getEvents(): Promise<Event[]> {
+  if (isSupabaseConfigured && supabase) return dbGetEvents();
   await delay(100);
   return mockEventsState;
 }
@@ -383,6 +397,7 @@ export async function getEvent(id: string): Promise<Event | null> {
 }
 
 export async function registerForEvent(eventId: string): Promise<Event> {
+  if (isSupabaseConfigured && supabase) return dbRegisterForEvent(eventId);
   await delay();
   const event = mockEventsState.find((e) => e.id === eventId);
   if (!event) throw new Error('Event not found');
@@ -392,6 +407,7 @@ export async function registerForEvent(eventId: string): Promise<Event> {
 }
 
 export async function getProducts(): Promise<Product[]> {
+  if (isSupabaseConfigured && supabase) return dbGetProducts();
   await delay(100);
   return mockProducts;
 }
@@ -402,6 +418,7 @@ export async function getProduct(id: string): Promise<Product | null> {
 }
 
 export async function getMembershipPlans(): Promise<MembershipPlan[]> {
+  if (isSupabaseConfigured && supabase) return dbGetMembershipPlans();
   await delay(100);
   return mockMembershipPlans;
 }
@@ -412,6 +429,7 @@ export async function getFamilyMembers(): Promise<FamilyMember[]> {
 }
 
 export async function requestDataDeletion(): Promise<{ ticketId: string }> {
+  if (isSupabaseConfigured && supabase) return dbRequestDataDeletion();
   await delay();
   return { ticketId: generateId('ticket') };
 }
@@ -432,21 +450,19 @@ export async function registerPushToken(token: string): Promise<void> {
   await updateProfile({ pushToken: token });
 }
 
-function mapProfileFromDb(data: Record<string, unknown>): UserProfile {
+/** Sync consent + onboarding flags from Supabase after login. */
+export async function syncAuthFlagsFromDb(): Promise<{
+  consentComplete: boolean;
+  onboardingComplete: boolean;
+}> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { consentComplete: false, onboardingComplete: false };
+  }
+  const profile = await getCurrentProfile();
+  if (!profile) return { consentComplete: false, onboardingComplete: false };
+  const consentComplete = await memberHasConsents(profile.id);
   return {
-    id: data.id as string,
-    authUserId: data.auth_user_id as string,
-    role: (data.role as UserProfile['role']) ?? 'member',
-    firstName: data.first_name as string,
-    lastName: data.last_name as string,
-    email: data.email as string,
-    phone: data.phone as string | undefined,
-    dob: data.dob as string | undefined,
-    timezone: (data.timezone as string) ?? 'America/New_York',
-    country: (data.country as string) ?? 'US',
-    emergencyContact: data.emergency_contact as string | undefined,
-    pushToken: data.push_token as string | undefined,
-    onboardingComplete: (data.onboarding_complete as boolean) ?? false,
-    createdAt: data.created_at as string,
+    consentComplete,
+    onboardingComplete: profile.onboardingComplete,
   };
 }

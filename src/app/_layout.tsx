@@ -4,7 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
-import { getCurrentProfile } from '@/lib/api';
+import { getCurrentProfile, syncAuthFlagsFromDb } from '@/lib/api';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { StripeProviderWrapper } from '@/lib/stripe-provider';
 import { colors } from '@/lib/theme';
 
@@ -13,6 +15,7 @@ const queryClient = new QueryClient();
 function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
+  useSupabaseAuth();
   const {
     isAuthenticated,
     consentComplete,
@@ -22,6 +25,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     setLoading,
     setAuthenticated,
     setProfile,
+    setConsentComplete,
     setOnboardingComplete,
   } = useAuthStore();
 
@@ -41,14 +45,20 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         if (profile) {
           setProfile(profile);
           setAuthenticated(true);
-          if (profile.onboardingComplete) setOnboardingComplete(true);
+          if (isSupabaseConfigured) {
+            const flags = await syncAuthFlagsFromDb();
+            if (flags.consentComplete) setConsentComplete(true);
+            if (flags.onboardingComplete) setOnboardingComplete(true);
+          } else if (profile.onboardingComplete) {
+            setOnboardingComplete(true);
+          }
         }
       } catch {
         // mock mode always has profile after login
       }
     }
     if (!isLoading) checkAuth();
-  }, [isLoading, setAuthenticated, setProfile, setOnboardingComplete]);
+  }, [isLoading, setAuthenticated, setConsentComplete, setProfile, setOnboardingComplete]);
 
   useEffect(() => {
     if (isLoading) return;
