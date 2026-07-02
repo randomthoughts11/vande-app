@@ -7,7 +7,7 @@ This app uses **Supabase** for auth, Postgres, and Row Level Security. Without e
 1. Go to [supabase.com](https://supabase.com) and create a project.
 2. Open **Project Settings → API** and copy:
    - **Project URL** → `EXPO_PUBLIC_SUPABASE_URL`
-   - **anon public key** → `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+   - **anon public key** → `EXPO_PUBLIC_SUPABASE_ANON_KEY` (or `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
 
 ## 2. Configure the app
 
@@ -48,8 +48,28 @@ Or paste each file’s contents and click **Run**.
 
 In **Authentication → Providers → Email**:
 
-- Turn **off** “Confirm email” for faster local testing (optional).
+- For fastest local testing, turn **off** “Confirm email”.
 - Enable email/password sign-in.
+
+If **Confirm email** is on, configure redirect URLs so the confirmation link loads:
+
+1. **Authentication → URL Configuration**
+   - **Site URL:** your deployed web URL (e.g. `https://vande-wellness.vercel.app`) or `http://localhost:8081` for local web
+   - **Redirect URLs** — add each URL you use:
+     - `http://localhost:8081/auth/callback`
+     - `https://YOUR_VERCEL_DOMAIN/auth/callback`
+     - `vandewellness://auth/callback` (mobile deep link)
+     - `exp://**` (Expo Go dev — wildcard)
+
+2. Optional `.env` for production web redirects:
+
+```env
+EXPO_PUBLIC_APP_URL=https://YOUR_VERCEL_DOMAIN
+```
+
+3. After signup, users must open the email link. The app route `/auth/callback` completes verification.
+
+**Email link not loading?** The redirect URL in the email is not in Supabase’s allow list, or Site URL points to a server that isn’t running. Either add the correct URL above or disable email confirmation for dev.
 
 ## 5. Verify it works
 
@@ -98,7 +118,9 @@ Current RLS policies are **development-friendly**. Before production with PHI:
 |-------|-----|
 | “Profile not found” after sign up | Re-run migration `002`; check **Database → Triggers** |
 | Empty Consult tab | Run migration `004` seed |
-| App still uses mock data | Confirm `.env` values and restart with `--clear` |
+| App still uses mock data | Confirm `.env` has URL **and** anon/publishable key; restart with `--clear` |
+| Logged in but no `profiles` row | App was in mock mode (wrong key env name) or migration `002` not run |
+| Email confirm link blank / won’t load | Add `/auth/callback` URLs in Supabase → URL Configuration (see §4) |
 | RLS errors in logs | Re-run migration `003` |
 
 ## Next steps (backend roadmap)

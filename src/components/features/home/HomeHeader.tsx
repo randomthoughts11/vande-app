@@ -1,15 +1,18 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Bell, Leaf } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HOME_COLORS, HOME_USER } from '@/constants/home-mock';
+import { HOME_COLORS } from '@/constants/home-mock';
+import { useAuthStore } from '@/store/authStore';
 
 interface HomeHeaderProps {
   userName?: string;
   onNotificationPress?: () => void;
 }
 
-export function HomeHeader({ userName = HOME_USER.firstName, onNotificationPress }: HomeHeaderProps) {
+export function HomeHeader({ userName, onNotificationPress }: HomeHeaderProps) {
   const insets = useSafeAreaInsets();
+  const profileFirstName = useAuthStore((state) => state.profile?.firstName);
+  const displayName = userName ?? profileFirstName ?? 'there';
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
@@ -18,7 +21,7 @@ export function HomeHeader({ userName = HOME_USER.firstName, onNotificationPress
           <View style={styles.leafWrap}>
             <Leaf size={14} color="#A8D5A2" fill="#A8D5A2" strokeWidth={1.5} />
           </View>
-          <Text style={styles.greetingText}>Hi {userName}!</Text>
+          <Text style={styles.greetingText}>Hi {displayName}!</Text>
         </View>
 
         <Pressable

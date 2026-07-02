@@ -19,7 +19,7 @@ export function FreeConsultCta({ onPress }: FreeConsultCtaProps) {
           {HOME_FREE_CONSULT.cta}
           <Text style={styles.ctaHighlight}> Book now.</Text>
         </Text>
-        <CircleArrowButton onPress={onPress} accessibilityLabel="Book free consultation" />
+        <CircleArrowButton />
       </Pressable>
     </View>
   );

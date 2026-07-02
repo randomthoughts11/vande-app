@@ -23,9 +23,10 @@ export const HOME_SPACING = {
   itemGap: 8,
 } as const;
 
+/** @deprecated Use auth profile — kept for reference layouts only */
 export const HOME_USER = {
-  firstName: 'Snigdha',
-  greeting: 'Hi Snigdha!',
+  firstName: 'Member',
+  greeting: 'Hi Member!',
 } as const;
 
 export const HOME_SCREENING = {

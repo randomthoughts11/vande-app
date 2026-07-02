@@ -65,9 +65,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
     const segmentList = segments as string[];
     const inAuth = segmentList[0] === '(auth)';
+    const inAuthCallback = segmentList[0] === 'auth';
     const authScreen = segmentList[1];
 
-    if (!isAuthenticated && !inAuth) {
+    if (!isAuthenticated && !inAuth && !inAuthCallback) {
       router.replace('/(auth)/welcome');
     } else if (isAuthenticated && !consentComplete && authScreen !== 'consent') {
       router.replace('/(auth)/consent');
@@ -96,6 +97,7 @@ export default function RootLayout() {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.warmCream } }}>
           <Stack.Screen name="index" />
+          <Stack.Screen name="auth" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="appointment/book" options={{ headerShown: true, title: 'Book Consultation', headerTintColor: colors.primaryGreen }} />
@@ -104,6 +106,7 @@ export default function RootLayout() {
           <Stack.Screen name="intake" options={{ headerShown: false }} />
           <Stack.Screen name="chat/index" options={{ headerShown: false }} />
           <Stack.Screen name="chat/[threadId]" options={{ headerShown: false }} />
+          <Stack.Screen name="ai-consult" options={{ headerShown: false }} />
           <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Event', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="content/[id]" options={{ headerShown: true, title: 'Content', headerTintColor: colors.primaryGreen }} />
           <Stack.Screen name="products/[id]" options={{ headerShown: true, title: 'Product', headerTintColor: colors.primaryGreen }} />

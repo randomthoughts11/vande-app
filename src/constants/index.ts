@@ -12,3 +12,4 @@ export * from './events-mock';
 export * from './menu-mock';
 export * from './messages-mock';
 export * from './intake-mock';
+export * from './ai-consult-mock';

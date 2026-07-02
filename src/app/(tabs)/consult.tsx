@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Clock, Video } from 'lucide-react-native';
+import { Clock, Sparkles, Video } from 'lucide-react-native';
+import { aiConsultHref } from '@/lib/ai-consult-navigation';
 import { PractitionerCard } from '@/components/features/wellness/PractitionerCard';
 import { AppointmentCard } from '@/components/features/wellness/AppointmentCard';
 import { Card } from '@/components/ui/Card';
@@ -42,6 +43,25 @@ export default function ConsultScreen() {
         title="Consult"
         subtitle="Book virtual or in-person Ayurvedic consultations"
       />
+
+      <Pressable
+        onPress={() => router.push(aiConsultHref())}
+        accessibilityRole="button"
+        style={styles.heroCta}
+      >
+        <Card variant="elevated" style={styles.aiCard}>
+          <View style={styles.heroContent}>
+            <View style={[styles.heroIcon, styles.aiIcon]}>
+              <Sparkles size={24} color={colors.gold} />
+            </View>
+            <View style={styles.heroText}>
+              <Text style={styles.heroTitle}>AI health consultation</Text>
+              <Text style={styles.heroDesc}>Chat with your wellness guide — voice or text</Text>
+            </View>
+            <Text style={styles.heroArrow}>→</Text>
+          </View>
+        </Card>
+      </Pressable>
 
       <Pressable
         onPress={() => router.push('/appointment/book')}
@@ -124,6 +144,8 @@ export default function ConsultScreen() {
 
 const styles = StyleSheet.create({
   heroCta: { marginBottom: layout.sectionGap },
+  aiCard: { borderColor: colors.gold, borderWidth: 1 },
+  aiIcon: { backgroundColor: colors.warmCream },
   heroCard: { borderColor: colors.primaryGreen, borderWidth: 1 },
   heroContent: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   heroIcon: {

@@ -4,3 +4,4 @@ export * from './events';
 export * from './profile';
 export * from './messages';
 export * from './intake';
+export * from './ai-consult';

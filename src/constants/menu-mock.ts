@@ -27,8 +27,8 @@ export const MENU_FONTS = {
 } as const;
 
 export const MENU_USER = {
-  name: 'Snigdha DS',
-  email: 'snigdhads.007@gmail.com',
+  name: 'Member',
+  email: '',
 } as const;
 
 export const MENU_APP_VERSION = 'V1.1.1555';
@@ -55,6 +55,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     id: 'health',
     title: 'Your Health',
     items: [
+      { id: 'ai-consult', label: 'AI Health Guide', icon: 'sparkles' },
       { id: 'medical-reports', label: 'Medical Reports', icon: 'bar-chart' },
       { id: 'preferences', label: 'Preferences', icon: 'sliders' },
       { id: 'order-history', label: 'Order History', icon: 'shopping-cart' },

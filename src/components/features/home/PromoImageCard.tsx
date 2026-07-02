@@ -25,7 +25,7 @@ export function PromoImageCard({ title, description, actionLabel, imageUri, onPr
           </View>
           <View style={styles.actionRow}>
             <Text style={styles.actionLabel}>{actionLabel}</Text>
-            <CircleArrowButton onPress={onPress} accessibilityLabel={actionLabel} />
+            <CircleArrowButton />
           </View>
         </View>
       </ImageBackground>

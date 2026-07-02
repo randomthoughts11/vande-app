@@ -3,6 +3,7 @@ export * from './events';
 export * from './menu';
 export * from './messages';
 export * from './intake';
+export * from './ai-consult';
 export { MoodCheckIn } from './wellness/MoodCheckIn';
 export { TodayPlanCard } from './wellness/TodayPlanCard';
 export { AppointmentCard } from './wellness/AppointmentCard';

@@ -30,7 +30,22 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true);
     try {
-      const profile = await signUp(data.email, data.password, data.firstName, data.lastName);
+      const { profile, needsEmailConfirmation } = await signUp(
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName,
+      );
+
+      if (needsEmailConfirmation) {
+        Alert.alert(
+          'Check your email',
+          'We sent a confirmation link. Open it to verify your account, then log in.',
+        );
+        router.replace('/(auth)/login');
+        return;
+      }
+
       setProfile(profile);
       setAuthenticated(true);
       router.replace('/(auth)/consent');

@@ -33,6 +33,7 @@ import {
   mockThreads,
   MOCK_MEMBER_ID,
 } from './mockData';
+import { getAuthRedirectUrl } from './auth-redirect';
 import { isSupabaseConfigured, supabase } from './supabase';
 import {
   dbBookAppointment,
@@ -72,6 +73,11 @@ function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+export type SignUpResult = {
+  profile: UserProfile;
+  needsEmailConfirmation: boolean;
+};
+
 // Auth
 export async function signIn(email: string, password: string): Promise<UserProfile> {
   if (isSupabaseConfigured && supabase) {
@@ -93,19 +99,25 @@ export async function signUp(
   password: string,
   firstName: string,
   lastName: string,
-): Promise<UserProfile> {
+): Promise<SignUpResult> {
   if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName } },
+      options: {
+        data: { first_name: firstName, last_name: lastName },
+        emailRedirectTo: getAuthRedirectUrl(),
+      },
     });
     if (error) throw error;
     if (!data.user) throw new Error('Sign up failed');
     await new Promise((resolve) => setTimeout(resolve, 400));
     const profile =
       (await fetchProfileByAuthUserId(data.user.id)) ?? (await ensureMemberProfile(data.user));
-    return profile;
+    return {
+      profile,
+      needsEmailConfirmation: !data.session,
+    };
   }
   await delay();
   mockProfileState = {
@@ -117,7 +129,7 @@ export async function signUp(
     email,
     onboardingComplete: false,
   };
-  return mockProfileState;
+  return { profile: mockProfileState, needsEmailConfirmation: false };
 }
 
 export async function signOut(): Promise<void> {

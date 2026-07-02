@@ -20,6 +20,8 @@ export const ROUTES = {
   // Stacks
   chat: "/chat",
   chatThread: (threadId: string) => `/chat/${threadId}` as const,
+  aiConsult: "/ai-consult",
+  aiConsultSession: (sessionId: string) => `/ai-consult/${sessionId}` as const,
   bookAppointment: "/appointment/book",
   appointment: (id: string) => `/appointment/${id}` as const,
   event: (id: string) => `/events/${id}` as const,

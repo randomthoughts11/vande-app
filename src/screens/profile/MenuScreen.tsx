@@ -13,6 +13,7 @@ import { useAppNavigation } from "@/hooks";
 import { signOut } from "@/lib/api";
 import { openVandeCart } from "@/lib/vandecart";
 import { useAuthStore } from "@/store/authStore";
+import { aiConsultHref } from "@/lib/ai-consult-navigation";
 import { useRouter } from "expo-router";
 import { Alert, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,9 +26,9 @@ export default function MenuScreen() {
   const { profile, reset, setAuthenticated, setProfile } = useAuthStore();
 
   const displayName = profile
-    ? `${profile.firstName} ${profile.lastName}`.trim() || "Snigdha DS"
-    : "Snigdha DS";
-  const displayEmail = profile?.email ?? "snigdhads.007@gmail.com";
+    ? `${profile.firstName} ${profile.lastName}`.trim() || "Member"
+    : "Member";
+  const displayEmail = profile?.email ?? "";
 
   const handleLogout = async () => {
     await signOut();
@@ -59,6 +60,9 @@ export default function MenuScreen() {
 
     if (sectionId === "health") {
       switch (itemId) {
+        case "ai-consult":
+          router.push(aiConsultHref());
+          return;
         case "my-plan":
           router.push("/(tabs)/plan");
           return;

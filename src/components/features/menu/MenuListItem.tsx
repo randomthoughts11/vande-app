@@ -7,6 +7,7 @@ import {
   Crown,
   FileText,
   Leaf,
+  Sparkles,
   ShoppingBag,
   ShoppingCart,
   SlidersHorizontal,
@@ -27,6 +28,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   users: Users,
   'shopping-bag': ShoppingBag,
   leaf: Leaf,
+  sparkles: Sparkles,
   'file-text': FileText,
 };
 
