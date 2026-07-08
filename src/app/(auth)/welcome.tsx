@@ -49,76 +49,75 @@ export default function WelcomeScreen() {
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={styles.decorA} />
-        <View style={styles.decorB} />
-
-        <View style={styles.brandLockup}>
-          <View style={styles.logoOuter}>
-            <View style={styles.logoInner}>
-              <Leaf size={34} color={colors.gold} fill={colors.lightGold} strokeWidth={1.5} />
-            </View>
-            <Text style={styles.logoRingText}>VANDE WELLNESS</Text>
-          </View>
-
-          <Text style={styles.wordmark}>Vande Wellness</Text>
-          <Text style={styles.taglineItalic}>Whole-person Ayurvedic care</Text>
-          <Text style={styles.heroLine}>
-            Consultations, care plans, and guidance —{'\n'}built around you.
-          </Text>
-        </View>
-      </View>
-
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 130 }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
       >
-        {/* Floating pillars */}
-        <View style={styles.pillarRow}>
-          {PILLARS.map(({ icon: Icon, label }) => (
-            <View key={label} style={styles.pillarCard}>
-              <View style={styles.pillarIcon}>
-                <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+          <View style={styles.decorA} />
+          <View style={styles.decorB} />
+
+          <View style={styles.brandLockup}>
+            <View style={styles.logoOuter}>
+              <View style={styles.logoInner}>
+                <Leaf size={34} color={colors.gold} fill={colors.lightGold} strokeWidth={1.5} />
               </View>
-              <Text style={styles.pillarLabel} numberOfLines={2}>
-                {label}
-              </Text>
+              <Text style={styles.logoRingText}>VANDE WELLNESS</Text>
             </View>
-          ))}
+
+            <Text style={styles.wordmark}>Vande Wellness</Text>
+            <Text style={styles.taglineItalic}>Whole-person Ayurvedic care</Text>
+            <Text style={styles.heroLine}>
+              Consultations, care plans, and guidance —{'\n'}built around you.
+            </Text>
+          </View>
         </View>
 
-        {/* Main card */}
-        <View style={styles.card}>
-          <Text style={styles.overline}>WHY VANDE</Text>
-          <Text style={styles.cardTitle}>Wellness that feels calm, clear, and personal</Text>
-
-          <View style={styles.benefitList}>
-            {BENEFITS.map(({ icon: Icon, title, text }) => (
-              <View key={title} style={styles.benefitRow}>
-                <View style={styles.benefitIcon}>
+        <View style={styles.scrollInner}>
+          <View style={styles.pillarRow}>
+            {PILLARS.map(({ icon: Icon, label }) => (
+              <View key={label} style={styles.pillarCard}>
+                <View style={styles.pillarIcon}>
                   <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
                 </View>
-                <View style={styles.benefitCopy}>
-                  <Text style={styles.benefitTitle}>{title}</Text>
-                  <Text style={styles.benefitText}>{text}</Text>
-                </View>
+                <Text style={styles.pillarLabel} numberOfLines={2}>
+                  {label}
+                </Text>
               </View>
             ))}
           </View>
 
-          <View style={styles.quoteBox}>
-            <Text style={styles.quoteText}>
-              &ldquo;Start with a free consultation — no pressure, just clarity on your next
-              steps.&rdquo;
-            </Text>
-          </View>
+          <View style={styles.card}>
+            <Text style={styles.overline}>WHY VANDE</Text>
+            <Text style={styles.cardTitle}>Wellness that feels calm, clear, and personal</Text>
 
-          <View style={styles.demoBadge}>
-            <Text style={styles.demoText}>
-              Demo · use any email with a 6+ character password
-            </Text>
+            <View style={styles.benefitList}>
+              {BENEFITS.map(({ icon: Icon, title, text }) => (
+                <View key={title} style={styles.benefitRow}>
+                  <View style={styles.benefitIcon}>
+                    <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+                  </View>
+                  <View style={styles.benefitCopy}>
+                    <Text style={styles.benefitTitle}>{title}</Text>
+                    <Text style={styles.benefitText}>{text}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.quoteBox}>
+              <Text style={styles.quoteText}>
+                &ldquo;Start with a free consultation — no pressure, just clarity on your next
+                steps.&rdquo;
+              </Text>
+            </View>
+
+            <View style={styles.demoBadge}>
+              <Text style={styles.demoText}>
+                Demo · use any email with a 6+ character password
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -237,7 +236,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
-    marginTop: -28,
   },
   scrollInner: {
     paddingHorizontal: spacing.lg,
@@ -246,6 +244,7 @@ const styles = StyleSheet.create({
   pillarRow: {
     flexDirection: 'row',
     gap: 10,
+    marginTop: -28,
     marginBottom: spacing.md,
     width: '100%',
   },
