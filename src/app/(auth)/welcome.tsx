@@ -1,4 +1,13 @@
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -18,9 +27,9 @@ const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Geor
 const sans = Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' });
 
 const PILLARS = [
-  { icon: Stethoscope, label: 'Holistic\nphysicians' },
-  { icon: Heart, label: 'Personalized\ncare' },
-  { icon: Sun, label: 'Daily\nrituals' },
+  { icon: Stethoscope, label: 'Holistic physicians' },
+  { icon: Heart, label: 'Personalized care' },
+  { icon: Sun, label: 'Daily rituals' },
 ] as const;
 
 const BENEFITS = [
@@ -41,9 +50,44 @@ const BENEFITS = [
   },
 ] as const;
 
+function useWelcomeLayout() {
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+
+  return useMemo(() => {
+    const laptop = isWeb && width >= 900;
+    const tablet = isWeb && width >= 640 && width < 900;
+
+    return {
+      laptop,
+      tablet,
+      isWeb,
+      contentMaxWidth: laptop ? 1040 : tablet ? 720 : undefined,
+      footerMaxWidth: laptop ? 480 : tablet ? 420 : undefined,
+      horizontalPad: laptop ? 48 : tablet ? 32 : spacing.lg,
+      wordmarkSize: laptop ? 44 : tablet ? 40 : 36,
+      cardTitleSize: laptop ? 32 : tablet ? 28 : 26,
+      heroSize: laptop ? 19 : 17,
+      pillarLabelSize: laptop ? 15 : 13,
+      pillarIconSize: laptop ? 24 : 22,
+      benefitTitleSize: laptop ? 18 : 17,
+      benefitTextSize: laptop ? 16 : 15,
+    };
+  }, [width, isWeb]);
+}
+
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const layout = useWelcomeLayout();
+
+  const contentShell = layout.contentMaxWidth
+    ? { maxWidth: layout.contentMaxWidth, width: '100%' as const, alignSelf: 'center' as const }
+    : null;
+
+  const footerShell = layout.footerMaxWidth
+    ? { maxWidth: layout.footerMaxWidth, width: '100%' as const, alignSelf: 'center' as const }
+    : null;
 
   return (
     <View style={styles.root}>
@@ -52,94 +96,133 @@ export default function WelcomeScreen() {
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + (layout.laptop ? 180 : 160),
+          flexGrow: 1,
+        }}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={[styles.header, { paddingTop: insets.top + spacing.lg }]}>
           <View style={styles.decorA} />
           <View style={styles.decorB} />
 
-          <View style={styles.brandLockup}>
-            <View style={styles.logoOuter}>
-              <View style={styles.logoInner}>
-                <Leaf size={34} color={colors.gold} fill={colors.lightGold} strokeWidth={1.5} />
+          <View style={[styles.brandLockup, contentShell, { paddingHorizontal: layout.horizontalPad }]}>
+            <View style={[styles.logoOuter, layout.laptop && styles.logoOuterLaptop]}>
+              <View style={[styles.logoInner, layout.laptop && styles.logoInnerLaptop]}>
+                <Leaf
+                  size={layout.laptop ? 46 : 40}
+                  color={colors.gold}
+                  fill={colors.lightGold}
+                  strokeWidth={1.5}
+                />
               </View>
               <Text style={styles.logoRingText}>VANDE WELLNESS</Text>
             </View>
 
-            <Text style={styles.wordmark}>Vande Wellness</Text>
-            <Text style={styles.taglineItalic}>Whole-person Ayurvedic care</Text>
-            <Text style={styles.heroLine}>
-              Consultations, care plans, and guidance —{'\n'}built around you.
+            <Text style={[styles.wordmark, { fontSize: layout.wordmarkSize }]}>Vande Wellness</Text>
+            <Text style={[styles.taglineItalic, layout.laptop && styles.taglineLaptop]}>
+              Whole-person Ayurvedic care
+            </Text>
+            <Text
+              style={[
+                styles.heroLine,
+                { fontSize: layout.heroSize, maxWidth: layout.laptop ? 560 : 420 },
+              ]}
+            >
+              Consultations, care plans, and guidance — built around you.
             </Text>
           </View>
         </View>
 
-        <View style={styles.scrollInner}>
-          <View style={styles.pillarRow}>
+        <View
+          style={[
+            styles.scrollInner,
+            contentShell,
+            { paddingHorizontal: layout.horizontalPad },
+          ]}
+        >
+          <View style={[styles.pillarRow, layout.laptop && styles.pillarRowLaptop]}>
             {PILLARS.map(({ icon: Icon, label }) => (
-              <View key={label} style={styles.pillarCard}>
-                <View style={styles.pillarIcon}>
-                  <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+              <View
+                key={label}
+                style={[
+                  styles.pillarCard,
+                  layout.laptop && styles.pillarCardLaptop,
+                  layout.tablet && styles.pillarCardTablet,
+                ]}
+              >
+                <View style={[styles.pillarIcon, layout.laptop && styles.pillarIconLaptop]}>
+                  <Icon size={layout.pillarIconSize} color={colors.primaryGreen} strokeWidth={2} />
                 </View>
-                <Text style={styles.pillarLabel} numberOfLines={2}>
+                <Text style={[styles.pillarLabel, { fontSize: layout.pillarLabelSize }]}>
                   {label}
                 </Text>
               </View>
             ))}
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.overline}>WHY VANDE</Text>
-            <Text style={styles.cardTitle}>Wellness that feels calm, clear, and personal</Text>
+          <View style={[layout.laptop && styles.mainGrid]}>
+            <View style={[styles.card, layout.laptop && styles.cardLaptop]}>
+              <Text style={styles.overline}>WHY VANDE</Text>
+              <Text style={[styles.cardTitle, { fontSize: layout.cardTitleSize }]}>
+                Wellness that feels calm, clear, and personal
+              </Text>
 
-            <View style={styles.benefitList}>
-              {BENEFITS.map(({ icon: Icon, title, text }) => (
-                <View key={title} style={styles.benefitRow}>
-                  <View style={styles.benefitIcon}>
-                    <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
+              <View style={[styles.benefitList, layout.laptop && styles.benefitListLaptop]}>
+                {BENEFITS.map(({ icon: Icon, title, text }) => (
+                  <View key={title} style={styles.benefitRow}>
+                    <View style={styles.benefitIcon}>
+                      <Icon size={layout.pillarIconSize} color={colors.primaryGreen} strokeWidth={2} />
+                    </View>
+                    <View style={styles.benefitCopy}>
+                      <Text style={[styles.benefitTitle, { fontSize: layout.benefitTitleSize }]}>
+                        {title}
+                      </Text>
+                      <Text style={[styles.benefitText, { fontSize: layout.benefitTextSize }]}>
+                        {text}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.benefitCopy}>
-                    <Text style={styles.benefitTitle}>{title}</Text>
-                    <Text style={styles.benefitText}>{text}</Text>
-                  </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
 
-            <View style={styles.quoteBox}>
-              <Text style={styles.quoteText}>
-                &ldquo;Start with a free consultation — no pressure, just clarity on your next
-                steps.&rdquo;
-              </Text>
-            </View>
+            <View style={[layout.laptop && styles.sideColumn]}>
+              <View style={[styles.quoteBox, layout.laptop && styles.quoteBoxLaptop]}>
+                <Text style={[styles.quoteText, layout.laptop && styles.quoteTextLaptop]}>
+                  &ldquo;Start with a free consultation — no pressure, just clarity on your next
+                  steps.&rdquo;
+                </Text>
+              </View>
 
-            <View style={styles.demoBadge}>
-              <Text style={styles.demoText}>
-                Demo · use any email with a 6+ character password
-              </Text>
+              <View style={styles.demoBadge}>
+                <Text style={styles.demoText}>
+                  Demo · use any email with a 6+ character password
+                </Text>
+              </View>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* Footer CTAs */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
-        <Button
-          title="Create account"
-          onPress={() => router.push('/(auth)/register')}
-          fullWidth
-          style={styles.primaryCta}
-        />
-        <Pressable
-          onPress={() => router.push('/(auth)/login')}
-          style={({ pressed }) => [styles.loginRow, pressed && styles.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Log in to your account"
-        >
-          <Text style={styles.loginText}>Already with Vande? </Text>
-          <Text style={styles.loginBold}>Log in</Text>
-          <ArrowRight size={16} color={colors.primaryGreen} strokeWidth={2.5} />
-        </Pressable>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
+        <View style={[styles.footerInner, footerShell, { paddingHorizontal: layout.horizontalPad }]}>
+          <Button
+            title="Create account"
+            onPress={() => router.push('/(auth)/register')}
+            fullWidth
+            style={styles.primaryCta}
+          />
+          <Pressable
+            onPress={() => router.push('/(auth)/login')}
+            style={({ pressed }) => [styles.loginRow, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Log in to your account"
+          >
+            <Text style={styles.loginText}>Already with Vande? </Text>
+            <Text style={styles.loginBold}>Log in</Text>
+            <ArrowRight size={18} color={colors.primaryGreen} strokeWidth={2.5} />
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -149,44 +232,41 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.warmCream,
-    ...(Platform.OS === 'web'
-      ? { maxWidth: 480, width: '100%' as const, alignSelf: 'center' as const }
-      : null),
   },
   header: {
     backgroundColor: colors.primaryGreen,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-    paddingBottom: 48,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    paddingBottom: 56,
     overflow: 'hidden',
     width: '100%',
   },
   decorA: {
     position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
     backgroundColor: 'rgba(255,255,255,0.05)',
-    top: -60,
-    right: -50,
+    top: -90,
+    right: -60,
   },
   decorB: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
     backgroundColor: 'rgba(255,255,255,0.04)',
-    bottom: 20,
-    left: -40,
+    bottom: 24,
+    left: -60,
   },
   brandLockup: {
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    gap: spacing.xs,
   },
   logoOuter: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.35)',
     alignItems: 'center',
@@ -194,43 +274,56 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
+  logoOuterLaptop: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+  },
   logoInner: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logoInnerLaptop: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+  },
   logoRingText: {
     position: 'absolute',
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '700',
     color: 'rgba(255,255,255,0.75)',
-    letterSpacing: 2,
-    width: 100,
+    letterSpacing: 2.2,
+    width: 110,
     textAlign: 'center',
     fontFamily: sans,
   },
   wordmark: {
-    fontSize: 34,
     fontWeight: '700',
     color: colors.white,
     fontFamily: serif,
     letterSpacing: -0.5,
+    textAlign: 'center',
   },
   taglineItalic: {
-    fontSize: 15,
+    fontSize: 18,
     fontStyle: 'italic',
     color: colors.lightGold,
     fontFamily: serif,
-    marginTop: 4,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  taglineLaptop: {
+    fontSize: 20,
   },
   heroLine: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255,255,255,0.92)',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 28,
     marginTop: spacing.md,
     fontFamily: sans,
   },
@@ -238,75 +331,113 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollInner: {
-    paddingHorizontal: spacing.lg,
     width: '100%',
+    gap: spacing.xl,
+    paddingTop: spacing.xs,
   },
   pillarRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: -28,
-    marginBottom: spacing.md,
+    gap: 12,
+    marginTop: -32,
     width: '100%',
+  },
+  pillarRowLaptop: {
+    gap: 20,
+    marginTop: -40,
+    justifyContent: 'center',
   },
   pillarCard: {
     flex: 1,
     flexBasis: 0,
     minWidth: 0,
     backgroundColor: colors.card,
-    borderRadius: radii.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 6,
+    borderRadius: radii.xl,
+    paddingVertical: 20,
+    paddingHorizontal: 12,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 8,
+    justifyContent: 'center',
+    gap: 12,
+    minHeight: 120,
     ...shadows.card,
     borderWidth: 1,
     borderColor: colors.borderWarm,
   },
+  pillarCardTablet: {
+    minHeight: 130,
+    paddingVertical: 22,
+  },
+  pillarCardLaptop: {
+    flex: 0,
+    flexBasis: 'auto',
+    minWidth: 200,
+    maxWidth: 280,
+    minHeight: 148,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
   pillarIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.sage,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  pillarIconLaptop: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
   pillarLabel: {
-    fontSize: 11,
     fontWeight: '700',
     color: colors.deepGreen,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 20,
     fontFamily: sans,
     width: '100%',
   },
+  mainGrid: {
+    flexDirection: 'row',
+    gap: 24,
+    alignItems: 'flex-start',
+  },
   card: {
+    flex: 1,
     backgroundColor: colors.card,
     borderRadius: radii['2xl'],
-    padding: spacing.lg,
+    padding: spacing.xl,
     borderWidth: 1,
     borderColor: colors.borderWarm,
     ...shadows.card,
+    gap: spacing.sm,
+  },
+  cardLaptop: {
+    flex: 1.15,
+    padding: spacing.xl + 8,
+  },
+  sideColumn: {
+    flex: 0.85,
+    gap: spacing.lg,
   },
   overline: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     color: colors.accent,
-    marginBottom: spacing.xs,
     fontFamily: sans,
   },
   cardTitle: {
-    fontSize: 24,
     fontWeight: '700',
     color: colors.deepGreen,
     fontFamily: serif,
-    lineHeight: 30,
-    marginBottom: spacing.lg,
+    lineHeight: 38,
+    marginBottom: spacing.md,
   },
   benefitList: {
-    gap: spacing.md,
-    marginBottom: spacing.lg,
+    gap: spacing.lg,
+  },
+  benefitListLaptop: {
+    gap: spacing.xl,
   },
   benefitRow: {
     flexDirection: 'row',
@@ -314,9 +445,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   benefitIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.mint,
     alignItems: 'center',
     justifyContent: 'center',
@@ -325,80 +456,90 @@ const styles = StyleSheet.create({
   },
   benefitCopy: {
     flex: 1,
-    paddingTop: 2,
+    paddingTop: 4,
+    gap: 4,
   },
   benefitTitle: {
-    fontSize: 15,
     fontWeight: '700',
     color: colors.deepGreen,
-    marginBottom: 2,
     fontFamily: sans,
   },
   benefitText: {
-    fontSize: 13,
     color: colors.mutedText,
-    lineHeight: 18,
+    lineHeight: 24,
     fontFamily: sans,
   },
   quoteBox: {
     backgroundColor: colors.cardWarm,
     borderRadius: radii.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderLeftWidth: 3,
+    padding: spacing.lg,
+    borderLeftWidth: 4,
     borderLeftColor: colors.gold,
   },
+  quoteBoxLaptop: {
+    padding: spacing.xl,
+    flex: 1,
+  },
   quoteText: {
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 24,
     color: colors.textSecondary,
     fontFamily: serif,
     fontStyle: 'italic',
   },
+  quoteTextLaptop: {
+    fontSize: 18,
+    lineHeight: 28,
+  },
   demoBadge: {
     backgroundColor: colors.sage,
-    borderRadius: radii.md,
-    paddingVertical: 10,
-    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
     borderWidth: 1,
     borderColor: colors.borderSage,
   },
   demoText: {
-    ...typography.caption,
+    ...typography.bodySmall,
+    fontSize: 14,
     color: colors.primaryGreen,
     textAlign: 'center',
     fontWeight: '600',
+    lineHeight: 20,
   },
   footer: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    gap: spacing.sm,
+    paddingTop: spacing.lg,
     backgroundColor: colors.warmCream,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     ...shadows.md,
   },
+  footerInner: {
+    gap: spacing.md,
+    width: '100%',
+  },
   primaryCta: {
     borderRadius: radii.pill,
+    minHeight: 52,
   },
   loginRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.sm,
-    gap: 4,
+    gap: 6,
   },
   loginText: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.mutedText,
     fontFamily: sans,
   },
   loginBold: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.primaryGreen,
     fontFamily: sans,
