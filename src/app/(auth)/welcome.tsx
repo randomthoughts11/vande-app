@@ -18,9 +18,9 @@ const serif = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Geor
 const sans = Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' });
 
 const PILLARS = [
-  { icon: Stethoscope, label: 'Holistic physicians' },
-  { icon: Heart, label: 'Personalized care' },
-  { icon: Sun, label: 'Daily rituals' },
+  { icon: Stethoscope, label: 'Holistic\nphysicians' },
+  { icon: Heart, label: 'Personalized\ncare' },
+  { icon: Sun, label: 'Daily\nrituals' },
 ] as const;
 
 const BENEFITS = [
@@ -82,7 +82,9 @@ export default function WelcomeScreen() {
               <View style={styles.pillarIcon}>
                 <Icon size={18} color={colors.primaryGreen} strokeWidth={2} />
               </View>
-              <Text style={styles.pillarLabel}>{label}</Text>
+              <Text style={styles.pillarLabel} numberOfLines={2}>
+                {label}
+              </Text>
             </View>
           ))}
         </View>
@@ -148,6 +150,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.warmCream,
+    ...(Platform.OS === 'web'
+      ? { maxWidth: 480, width: '100%' as const, alignSelf: 'center' as const }
+      : null),
   },
   header: {
     backgroundColor: colors.primaryGreen,
@@ -155,6 +160,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 36,
     paddingBottom: 48,
     overflow: 'hidden',
+    width: '100%',
   },
   decorA: {
     position: 'absolute',
@@ -235,19 +241,24 @@ const styles = StyleSheet.create({
   },
   scrollInner: {
     paddingHorizontal: spacing.lg,
+    width: '100%',
   },
   pillarRow: {
     flexDirection: 'row',
     gap: 10,
     marginBottom: spacing.md,
+    width: '100%',
   },
   pillarCard: {
     flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
     backgroundColor: colors.card,
     borderRadius: radii.lg,
     paddingVertical: 14,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: 8,
     ...shadows.card,
     borderWidth: 1,
@@ -262,12 +273,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pillarLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     color: colors.deepGreen,
     textAlign: 'center',
-    lineHeight: 13,
+    lineHeight: 14,
     fontFamily: sans,
+    width: '100%',
   },
   card: {
     backgroundColor: colors.card,
